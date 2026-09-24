@@ -1,5 +1,5 @@
 {
-  "ai": {"provider":"deepseek","model":"deepseek-chat","base_url":"https://api.deepseek.com","api_key_env":"DEEPSEEK_API_KEY","temperature":0.2,"max_tokens":4096,"throttle_sec":0,"analysis_concurrency":3,"enrichment_concurrency":3,"languages":["zh"]},
+  "ai": {"provider":"openai","model":"gpt-4.1-mini","api_key_env":"OPENAI_API_KEY","temperature":0.2,"max_tokens":4096,"throttle_sec":0,"analysis_concurrency":3,"enrichment_concurrency":3,"languages":["zh"]},
   "processing": {
     "profiles_dir":"profiles",
     "default_profile":"china-news",
