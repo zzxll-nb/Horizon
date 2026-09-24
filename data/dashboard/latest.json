@@ -1,12 +1,12 @@
 {
   "schema_version": "1.0",
   "data_status": "live",
-  "generated_at": "2026-09-24T08:15:58.780081Z",
-  "period_start": "2026-09-24T07:11:17.672921Z",
-  "period_end": "2026-09-24T08:15:58.780081Z",
+  "generated_at": "2026-09-24T08:33:12.043485Z",
+  "period_start": "2026-09-24T07:27:58.123283Z",
+  "period_end": "2026-09-24T08:33:12.043485Z",
   "briefing": {
     "title": "今日 AI Briefing",
-    "summary": "本期共抓取 17 条信息，筛选出 0 条重要事件，覆盖暂无分类。",
+    "summary": "本期共抓取 19 条信息，筛选出 0 条重要事件，覆盖暂无分类。",
     "events": []
   },
   "news": [],
