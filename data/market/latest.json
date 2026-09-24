@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0",
+  "data_status": "live",
+  "generated_at": "2026-09-24T08:15:59.551504Z",
+  "provider": "yahoo_finance",
+  "assets": [
+    {
+      "id": "sp500",
+      "name": "S&P 500",
+      "symbol": "^GSPC",
+      "current_value": 7706.03,
+      "change": -58.67000000000007,
+      "change_percent": -0.755,
+      "updated_at": "2026-09-23T20:36:22Z",
+      "data_status": "live"
+    },
+    {
+      "id": "nasdaq_composite",
+      "name": "NASDAQ Composite",
+      "symbol": "^IXIC",
+      "current_value": 26936.037,
+      "change": -186.05299999999988,
+      "change_percent": -1.131,
+      "updated_at": "2026-09-23T21:15:59Z",
+      "data_status": "live"
+    },
+    {
+      "id": "dow_jones",
+      "name": "Dow Jones",
+      "symbol": "^DJI",
+      "current_value": 51511.59,
+      "change": -537.2400000000052,
+      "change_percent": -0.679,
+      "updated_at": "2026-09-23T20:36:26Z",
+      "data_status": "live"
+    },
+    {
+      "id": "gold",
+      "name": "Gold",
+      "symbol": "GC=F",
+      "current_value": 4318.5,
+      "change": 0.1000000000003638,
+      "change_percent": 0.002,
+      "updated_at": "2026-09-24T08:05:54Z",
+      "data_status": "live"
+    },
+    {
+      "id": "wti",
+      "name": "WTI Crude Oil",
+      "symbol": "CL=F",
+      "current_value": 93.32,
+      "change": 1.1599999999999966,
+      "change_percent": 1.259,
+      "updated_at": "2026-09-24T08:05:56Z",
+      "data_status": "live"
+    },
+    {
+      "id": "bitcoin",
+      "name": "Bitcoin",
+      "symbol": "BTC-USD",
+      "current_value": 84360.47,
+      "change": -22.539999999993597,
+      "change_percent": -1.794,
+      "updated_at": "2026-09-24T08:15:54Z",
+      "data_status": "live"
+    },
+    {
+      "id": "us10y",
+      "name": "US 10Y Treasury Yield",
+      "symbol": "^TNX",
+      "current_value": 5.114,
+      "change": 0.1459999999999999,
+      "change_percent": 2.939,
+      "updated_at": "2026-09-23T18:59:54Z",
+      "data_status": "live"
+    }
+  ]
+}

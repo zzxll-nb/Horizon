@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "data_status": "live",
+  "generated_at": "2026-09-24T08:15:58.780081Z",
+  "period_start": "2026-09-24T07:11:17.672921Z",
+  "period_end": "2026-09-24T08:15:58.780081Z",
+  "briefing": {
+    "title": "今日 AI Briefing",
+    "summary": "本期共抓取 17 条信息，筛选出 0 条重要事件，覆盖暂无分类。",
+    "events": []
+  },
+  "news": [],
+  "categories": [
+    {
+      "id": "china",
+      "display_name": "中国"
+    },
+    {
+      "id": "us",
+      "display_name": "美国"
+    },
+    {
+      "id": "international",
+      "display_name": "国际"
+    },
+    {
+      "id": "finance",
+      "display_name": "财经"
+    },
+    {
+      "id": "tech_ai",
+      "display_name": "科技 / AI"
+    }
+  ],
+  "market": null
+}
