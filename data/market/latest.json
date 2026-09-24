@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "data_status": "live",
-  "generated_at": "2026-09-24T09:22:40.882198Z",
+  "generated_at": "2026-09-24T10:12:32.701358Z",
   "provider": "yahoo_finance",
   "assets": [
     {
@@ -38,30 +38,30 @@
       "id": "gold",
       "name": "Gold",
       "symbol": "GC=F",
-      "current_value": 4296.3,
-      "change": -22.099999999999454,
-      "change_percent": -0.512,
-      "updated_at": "2026-09-24T09:12:38Z",
+      "current_value": 4291.8,
+      "change": -26.599999999999454,
+      "change_percent": -0.616,
+      "updated_at": "2026-09-24T10:02:26Z",
       "data_status": "live"
     },
     {
       "id": "wti",
       "name": "WTI Crude Oil",
       "symbol": "CL=F",
-      "current_value": 93.9,
-      "change": 1.740000000000009,
-      "change_percent": 1.888,
-      "updated_at": "2026-09-24T09:12:37Z",
+      "current_value": 93.74,
+      "change": 1.5799999999999983,
+      "change_percent": 1.714,
+      "updated_at": "2026-09-24T10:02:28Z",
       "data_status": "live"
     },
     {
       "id": "bitcoin",
       "name": "Bitcoin",
       "symbol": "BTC-USD",
-      "current_value": 83375.97,
-      "change": -1007.0399999999936,
-      "change_percent": -2.881,
-      "updated_at": "2026-09-24T09:22:34Z",
+      "current_value": 83308.92,
+      "change": -1074.0899999999965,
+      "change_percent": -3.024,
+      "updated_at": "2026-09-24T10:12:29Z",
       "data_status": "live"
     },
     {
