@@ -4,7 +4,7 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator, FormatChecker
 
-from src.dashboard_export import build_dashboard_snapshot
+from src.dashboard_export import build_dashboard_snapshot, dashboard_skip_reason
 from src.models import (
     ClassificationResult,
     ContentAnalysis,
@@ -134,6 +134,12 @@ def test_unmapped_profile_is_skipped_without_failing(caplog) -> None:
     assert snapshot["news"] == []
     assert snapshot["briefing"]["events"] == []
     assert "unmapped profile" in caplog.text
+
+
+def test_dashboard_skip_reason_reports_unmapped_profile() -> None:
+    item = _item("unknown-profile", 0, 9.0)
+
+    assert dashboard_skip_reason(item) == "unmapped_profile:unknown-profile"
 
 
 def test_storage_saves_latest_and_dated_archive(tmp_path) -> None:

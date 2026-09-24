@@ -28,6 +28,18 @@ CATEGORIES = [
 ]
 
 
+def dashboard_skip_reason(item: ContentItem) -> str | None:
+    """Return the contract reason an item cannot be exported."""
+    processing = item.processing
+    if processing is None or processing.analysis is None:
+        return "missing_analysis"
+    if processing.classification.profile not in CATEGORY_MAP:
+        return f"unmapped_profile:{processing.classification.profile}"
+    if processing.analysis.score is None:
+        return "missing_importance_score"
+    return None
+
+
 def _utc_iso(value: datetime) -> str:
     if value.tzinfo is None:
         value = value.replace(tzinfo=timezone.utc)

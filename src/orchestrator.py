@@ -1,7 +1,7 @@
 """Main orchestrator coordinating the entire workflow."""
 
 import asyncio
-from collections import defaultdict
+from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -34,7 +34,7 @@ from .ai.enricher import ContentEnricher, EnrichmentBatchResult
 from .ai.tokens import get_usage_snapshot
 from .processing import ProfileRegistry
 from .processing.tools import ToolRegistry
-from .dashboard_export import build_dashboard_snapshot
+from .dashboard_export import build_dashboard_snapshot, dashboard_skip_reason
 
 
 _TRACKING_QUERY_PARAMETERS = {
@@ -283,8 +283,16 @@ class HorizonOrchestrator:
 
             # 4. Analyze with AI
             analyzed_items = await self.analyze_items(merged_items)
+            classified_count = sum(item.processing is not None for item in analyzed_items)
+            analyzed_count = sum(
+                item.processing is not None
+                and item.processing.analysis is not None
+                and item.processing.analysis.score is not None
+                for item in analyzed_items
+            )
             self.console.print(
-                f"{self.icons['ai']} Analyzed {len(analyzed_items)} items with AI\n"
+                f"{self.icons['ai']} AI processing: input={len(merged_items)}, "
+                f"classified={classified_count}, analyzed={analyzed_count}\n"
             )
 
             # 5. Filter, deduplicate, and balance the digest
@@ -292,6 +300,30 @@ class HorizonOrchestrator:
                 analyzed_items,
             )
             important_items = filtering_result.items
+            filter_skip_reasons = Counter(
+                reason
+                for item in analyzed_items
+                if (reason := self.profile_filter_skip_reason(item)) is not None
+            )
+            skipped_count = len(analyzed_items) - filtering_result.threshold_count
+            self.console.print(
+                f"{self.icons['filter']} Filtering: selected="
+                f"{filtering_result.threshold_count}, skipped={skipped_count}"
+            )
+            for reason, count in sorted(filter_skip_reasons.items()):
+                self.console.print(
+                    f"      {self.icons['detail']} skip reason {reason}: {count}"
+                )
+
+            if analyzed_items and analyzed_count == 0:
+                self.console.print(
+                    f"{self.icons['warning']} Dashboard export: exported=0; "
+                    "all AI analyses failed"
+                )
+                raise RuntimeError(
+                    "AI analysis produced no valid importance scores; "
+                    "refusing to overwrite the last valid dashboard snapshot"
+                )
 
             # Show per-sub-source selection breakdown
             selected_counts: Dict[str, int] = defaultdict(int)
@@ -315,6 +347,22 @@ class HorizonOrchestrator:
                     total_fetched=len(all_items),
                     generated_at=generated_at,
                 )
+                exported_count = len(snapshot["news"])
+                export_skip_reasons = Counter(
+                    reason
+                    for item in important_items
+                    if (reason := dashboard_skip_reason(item)) is not None
+                )
+                self.console.print(
+                    f"{self.icons['save']} Dashboard export: input="
+                    f"{len(important_items)}, exported={exported_count}, "
+                    f"skipped={len(important_items) - exported_count}"
+                )
+                for reason, count in sorted(export_skip_reasons.items()):
+                    self.console.print(
+                        f"      {self.icons['detail']} export skip reason "
+                        f"{reason}: {count}"
+                    )
                 latest_path, archive_path = self.storage.save_dashboard_snapshot(
                     today, snapshot
                 )
@@ -873,17 +921,31 @@ class HorizonOrchestrator:
         item: ContentItem,
         threshold: Optional[float] = None,
     ) -> bool:
-        if not item.processing or not item.processing.analysis:
-            return False
+        return self.profile_filter_skip_reason(item, threshold) is None
+
+    def profile_filter_skip_reason(
+        self,
+        item: ContentItem,
+        threshold: Optional[float] = None,
+    ) -> Optional[str]:
+        """Return the precise reason an item fails the importance filter."""
+        if not item.processing:
+            return "missing_classification"
+        if not item.processing.analysis:
+            return "missing_analysis"
         profile_id = item.processing.classification.profile
         settings = self.config.processing.profile_settings.get(profile_id)
         effective_threshold = threshold
         if effective_threshold is None and settings is not None:
             effective_threshold = settings.threshold
         if effective_threshold is None:
-            return True
+            return None
         score = item.processing.analysis.score
-        return score is not None and score >= effective_threshold
+        if score is None:
+            return "missing_importance_score"
+        if score < effective_threshold:
+            return f"below_threshold:{profile_id}<{effective_threshold:g}"
+        return None
 
     def apply_balanced_digest(
         self,

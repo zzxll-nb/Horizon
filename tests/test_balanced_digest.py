@@ -167,6 +167,22 @@ def test_profile_without_threshold_bypasses_score_filter() -> None:
     assert orchestrator.passes_profile_filter(make_item("item", 1.0, "ai"))
 
 
+def test_profile_filter_reports_missing_score_and_threshold_reason() -> None:
+    orchestrator = make_orchestrator(DigestConfig())
+    missing_score = make_item("missing", 7.0, "ai")
+    missing_score.processing.analysis.score = None
+    below_threshold = make_item("below", 6.5, "ai")
+
+    assert (
+        orchestrator.profile_filter_skip_reason(missing_score)
+        == "missing_importance_score"
+    )
+    assert (
+        orchestrator.profile_filter_skip_reason(below_threshold)
+        == "below_threshold:tech-news<7"
+    )
+
+
 def test_rejects_settings_for_unknown_profile() -> None:
     config = Config(
         ai=AIConfig(
