@@ -1,5 +1,5 @@
 {
-  "ai": {"provider":"openai","model":"gpt-4.1-mini","scoring_model":"gpt-4.1-mini","api_key_env":"OPENAI_API_KEY","temperature":0.2,"max_tokens":8192,"throttle_sec":0,"analysis_concurrency":3,"enrichment_concurrency":3,"languages":["zh"],"deep_analysis":{"enabled":true,"terra_model":"gpt-5.6-terra","sol_model":"gpt-5.6-sol","terra_reasoning_effort":"medium","sol_reasoning_effort":"medium","sol_high_reasoning_effort":"high","sol_high_reasoning_for_critical":true,"minimum_score":7.0,"sol_threshold":8.5,"sol_max_items":3,"max_items_per_run":8}},
+  "ai": {"provider":"openai","model":"gpt-4.1-mini","screening_model":"gpt-4.1-mini","api_key_env":"OPENAI_API_KEY","temperature":0.2,"max_tokens":8192,"throttle_sec":0,"analysis_concurrency":3,"enrichment_concurrency":3,"languages":["zh"],"review":{"enabled":true,"model":"gpt-5.6-terra","reasoning_effort":"medium","mini_reject_threshold":5.5,"high_priority_threshold":7.5,"selection_threshold":7.0,"max_items":6,"batch_size":8},"deep_analysis":{"enabled":true,"terra_model":"gpt-5.6-terra","sol_model":"gpt-5.6-sol","terra_reasoning_effort":"medium","sol_reasoning_effort":"medium","sol_high_reasoning_effort":"high","sol_high_reasoning_for_critical":true,"minimum_score":7.0,"sol_threshold":8.5,"sol_max_items":1,"sol_extreme_max_items":2,"max_items_per_run":6}},
   "processing": {
     "profiles_dir":"profiles",
     "default_profile":"china-news",
@@ -31,7 +31,7 @@
     "openbb":{"enabled":true,"fetch_filings":false,"filings_provider":"sec","watchlists":[{"name":"macro-tech","enabled":true,"provider":"yfinance","fetch_limit":12,"category":"finance","symbols":["SPY","QQQ","TLT","GLD","USO","BABA","TSM","NVDA"],"profile":"finance-news"}]}
   },
   "collection":{"time_window_hours":24},
-  "digest":{"max_items":8,"profile_order":["china-news","us-news","international-news","finance-news","tech-ai-news"],"category_groups":{},"default_group":"other","default_group_limit":null},
+  "digest":{"max_items":6,"profile_order":["china-news","us-news","international-news","finance-news","tech-ai-news"],"category_groups":{},"default_group":"other","default_group_limit":null},
   "webhook":{"enabled":false,"url_env":"HORIZON_WEBHOOK_URL","delivery":"summary","overview_position":"first","platform":"generic","layout":"markdown","fallback_layout":"markdown","languages":["zh"],"headers":""},
   "wechat":{"enabled":false,"languages":["zh"],"chunk_size":4000}
 }

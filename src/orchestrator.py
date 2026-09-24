@@ -32,6 +32,8 @@ from .ai.analyzer import ContentAnalyzer
 from .ai.summarizer import DailySummarizer
 from .ai.enricher import ContentEnricher, EnrichmentBatchResult
 from .ai.router import route_deep_analysis
+from .ai.reviewer import ContentReviewer, ReviewBatchResult
+from .ai.analysis_cache import apply_cached_analysis, update_analysis_cache
 from .ai.tokens import get_usage_snapshot
 from .processing import ProfileRegistry
 from .processing.tools import ToolRegistry
@@ -225,6 +227,7 @@ class HorizonOrchestrator:
             else None
         )
         self.last_fetch_report: Optional[FetchReport] = None
+        self.last_deep_routing_counts = {"terra": 0, "sol": 0}
 
     async def run(
         self,
@@ -295,27 +298,6 @@ class HorizonOrchestrator:
                 f"{self.icons['ai']} AI processing: input={len(merged_items)}, "
                 f"classified={classified_count}, scored={analyzed_count}\n"
             )
-
-            # 5. Filter, deduplicate, and balance the digest
-            filtering_result = await self.select_digest_items(
-                analyzed_items,
-            )
-            important_items = filtering_result.items
-            filter_skip_reasons = Counter(
-                reason
-                for item in analyzed_items
-                if (reason := self.profile_filter_skip_reason(item)) is not None
-            )
-            skipped_count = len(analyzed_items) - filtering_result.threshold_count
-            self.console.print(
-                f"{self.icons['filter']} Filtering: selected="
-                f"{filtering_result.threshold_count}, skipped={skipped_count}"
-            )
-            for reason, count in sorted(filter_skip_reasons.items()):
-                self.console.print(
-                    f"      {self.icons['detail']} skip reason {reason}: {count}"
-                )
-
             if analyzed_items and analyzed_count == 0:
                 self.console.print(
                     f"{self.icons['warning']} Dashboard export: exported=0; "
@@ -326,6 +308,40 @@ class HorizonOrchestrator:
                     "refusing to overwrite the last valid dashboard snapshot"
                 )
 
+            # 5. High-recall mini screening, Terra review, and final selection.
+            mini_rejected_count = 0
+            terra_reviewed_count = 0
+            if self.config.ai.review.enabled:
+                review_candidates, mini_rejected = await self.prepare_review_candidates(
+                    analyzed_items
+                )
+                mini_rejected_count = len(mini_rejected)
+                review_result = await self.review_items(review_candidates)
+                terra_reviewed_count = review_result.reviewed_count
+                if review_candidates and terra_reviewed_count == 0:
+                    raise RuntimeError(
+                        "Terra review produced no valid results; refusing to overwrite "
+                        "the last valid dashboard snapshot"
+                    )
+                important_items = self.select_reviewed_items(review_candidates)
+            else:
+                filtering_result = await self.select_digest_items(analyzed_items)
+                important_items = filtering_result.items
+                filter_skip_reasons = Counter(
+                    reason
+                    for item in analyzed_items
+                    if (reason := self.profile_filter_skip_reason(item)) is not None
+                )
+                mini_rejected_count = len(analyzed_items) - filtering_result.threshold_count
+                self.console.print(
+                    f"{self.icons['filter']} Filtering: selected="
+                    f"{filtering_result.threshold_count}, skipped={mini_rejected_count}"
+                )
+                for reason, count in sorted(filter_skip_reasons.items()):
+                    self.console.print(
+                        f"      {self.icons['detail']} skip reason {reason}: {count}"
+                    )
+
             # Show per-sub-source selection breakdown
             selected_counts: Dict[str, int] = defaultdict(int)
             for item in important_items:
@@ -335,8 +351,17 @@ class HorizonOrchestrator:
                 self.console.print(f"      {self.icons['detail']} {source_key}: {count}")
             self.console.print("")
 
-            # 6. Search related stories + enrich with background knowledge (2nd AI pass)
-            await self.enrich_items(important_items)
+            # 6. Reuse unchanged long analysis, then enrich only cache misses.
+            load_analysis_cache = getattr(self.storage, "load_analysis_cache", None)
+            analysis_cache = load_analysis_cache() if load_analysis_cache else {}
+            reused_analysis_count = 0
+            needs_deep_analysis = []
+            for item in important_items:
+                if apply_cached_analysis(item, analysis_cache):
+                    reused_analysis_count += 1
+                else:
+                    needs_deep_analysis.append(item)
+            await self.enrich_items(needs_deep_analysis)
 
             generated_at = datetime.now(timezone.utc)
             today = generated_at.strftime("%Y-%m-%d")
@@ -372,10 +397,39 @@ class HorizonOrchestrator:
                 latest_path, archive_path = self.storage.save_dashboard_snapshot(
                     today, snapshot
                 )
+                save_analysis_cache = getattr(self.storage, "save_analysis_cache", None)
+                cache_path = (
+                    save_analysis_cache(
+                        update_analysis_cache(analysis_cache, important_items)
+                    )
+                    if save_analysis_cache
+                    else "disabled"
+                )
                 self.console.print(
                     f"{self.icons['save']} Saved dashboard snapshot to: "
-                    f"{latest_path} (archive: {archive_path})\n"
+                    f"{latest_path} (archive: {archive_path}, cache: {cache_path})\n"
                 )
+                if self.config.ai.review.enabled:
+                    review_config = self.config.ai.review
+                    deep_config = self.config.ai.deep_analysis
+                    self.console.print(
+                        "AI routing: "
+                        f"fetched={len(all_items)}, mini_scored={analyzed_count}, "
+                        f"mini_rejected={mini_rejected_count}, "
+                        f"terra_reviewed={terra_reviewed_count}, "
+                        f"terra_selected={len(important_items)}, "
+                        f"reused_analysis={reused_analysis_count}, "
+                        f"terra_deep={self.last_deep_routing_counts['terra']}, "
+                        f"sol_deep={self.last_deep_routing_counts['sol']}, "
+                        f"skipped={max(0, len(all_items) - exported_count)}"
+                    )
+                    self.console.print(
+                        "AI models: "
+                        f"mini={self._screening_model()}, "
+                        f"review={review_config.model}, "
+                        f"terra_deep={deep_config.terra_model}, "
+                        f"sol={deep_config.sol_model}\n"
+                    )
             except Exception as e:
                 self.console.print(
                     f"[yellow]{self.icons['warning']} Failed to export dashboard "
@@ -922,6 +976,142 @@ class HorizonOrchestrator:
             eligible_count=len(eligible),
         )
 
+    def _screening_model(self) -> str:
+        return (
+            self.config.ai.screening_model
+            or self.config.ai.scoring_model
+            or self.config.ai.model
+        )
+
+    def is_review_protected(self, item: ContentItem) -> bool:
+        """Protect market-sensitive topics from direct mini rejection."""
+        analysis = item.processing.analysis if item.processing else None
+        searchable = " ".join(
+            part
+            for part in (
+                item.title,
+                analysis.summary if analysis else "",
+                " ".join(analysis.tags) if analysis else "",
+            )
+            if part
+        ).casefold()
+        return any(
+            keyword.casefold() in searchable
+            for keyword in self.config.ai.review.protected_keywords
+        )
+
+    def mini_screen_skip_reason(self, item: ContentItem) -> Optional[str]:
+        """Reject only explicit, low-scoring noise; uncertain items reach Terra."""
+        if item.processing is None:
+            return "missing_classification"
+        analysis = item.processing.analysis
+        if analysis is None:
+            return None
+        if self.is_review_protected(item):
+            return None
+        score = analysis.score
+        if (
+            score is not None
+            and score < self.config.ai.review.mini_reject_threshold
+            and analysis.relevance == "irrelevant"
+            and analysis.obvious_noise
+        ):
+            return "explicit_obvious_noise"
+        return None
+
+    async def prepare_review_candidates(
+        self, items: List[ContentItem]
+    ) -> tuple[List[ContentItem], List[ContentItem]]:
+        """Apply high-recall mini screening and cost-saving topic deduplication."""
+        rejected = [item for item in items if self.mini_screen_skip_reason(item)]
+        candidates = [item for item in items if not self.mini_screen_skip_reason(item)]
+
+        profile_groups: Dict[str, List[ContentItem]] = defaultdict(list)
+        for item in candidates:
+            profile_id = (
+                item.processing.classification.profile
+                if item.processing
+                else self.profiles.default_profile
+            )
+            profile_groups[profile_id].append(item)
+        deduped: List[ContentItem] = []
+        for profile_id, profile_items in profile_groups.items():
+            settings = self.config.processing.profile_settings.get(profile_id)
+            if settings is None or settings.topic_dedup:
+                deduped.extend(await self.merge_topic_duplicates(profile_items))
+            else:
+                deduped.extend(profile_items)
+
+        await self._expand_twitter_discussion(deduped)
+        post_reanalysis = []
+        for item in deduped:
+            if self.mini_screen_skip_reason(item) is None:
+                post_reanalysis.append(item)
+            elif item not in rejected:
+                rejected.append(item)
+
+        high_priority = sum(
+            bool(
+                item.processing
+                and item.processing.analysis
+                and item.processing.analysis.score is not None
+                and item.processing.analysis.score
+                >= self.config.ai.review.high_priority_threshold
+            )
+            for item in post_reanalysis
+        )
+        self.console.print(
+            f"{self.icons['filter']} Mini screening: candidates="
+            f"{len(post_reanalysis)}, high_priority={high_priority}, "
+            f"rejected={len(rejected)}"
+        )
+        return post_reanalysis, rejected
+
+    async def review_items(self, items: List[ContentItem]) -> ReviewBatchResult:
+        """Run compact Terra value review for every surviving candidate."""
+        if not items:
+            return ReviewBatchResult()
+        review_config = self.config.ai.review
+        runtime_config = self.config.ai.model_copy(
+            update={
+                "model": review_config.model,
+                "reasoning_effort": review_config.reasoning_effort,
+                "provider_chain": None,
+            }
+        )
+        reviewer = ContentReviewer(
+            create_ai_client(runtime_config), batch_size=review_config.batch_size
+        )
+        result = await reviewer.review_batch(items)
+        self.console.print(
+            f"{self.icons['ai']} Terra review: reviewed={result.reviewed_count}, "
+            f"failed={len(result.failures)}"
+        )
+        return result
+
+    def select_reviewed_items(self, items: List[ContentItem]) -> List[ContentItem]:
+        """Select and rank only items approved by Terra, without filling quotas."""
+        threshold = self.config.ai.review.selection_threshold
+        approved = [
+            item
+            for item in items
+            if item.processing
+            and item.processing.review
+            and item.processing.review.decision == "select"
+            and item.processing.review.score >= threshold
+        ]
+        approved.sort(
+            key=lambda item: item.processing.review.score,  # type: ignore[union-attr]
+            reverse=True,
+        )
+        balanced = self.apply_balanced_digest(approved)
+        selected = balanced.items[: self.config.ai.review.max_items]
+        self.console.print(
+            f"{self.icons['filter']} Terra selection: approved={len(approved)}, "
+            f"selected={len(selected)}, rejected={len(items) - len(approved)}"
+        )
+        return selected
+
     def passes_profile_filter(
         self,
         item: ContentItem,
@@ -1137,11 +1327,12 @@ class HorizonOrchestrator:
             items: Important items to enrich (modified in-place)
         """
         deep_config = self.config.ai.deep_analysis
+        self.last_deep_routing_counts = {"terra": 0, "sol": 0}
         if not items:
             if deep_config.enabled:
-                scoring_model = self.config.ai.scoring_model or self.config.ai.model
                 self.console.print(
-                    f"{self.icons['ai']} AI routing models: scoring={scoring_model}, "
+                    f"{self.icons['ai']} AI routing models: screening="
+                    f"{self._screening_model()}, "
                     f"terra={deep_config.terra_model}, sol={deep_config.sol_model}"
                 )
                 self.console.print(
@@ -1155,9 +1346,13 @@ class HorizonOrchestrator:
 
         routing = route_deep_analysis(items, deep_config)
         items[:] = routing.selected_items
-        scoring_model = self.config.ai.scoring_model or self.config.ai.model
+        self.last_deep_routing_counts = {
+            "terra": len(routing.terra),
+            "sol": len(routing.sol),
+        }
         self.console.print(
-            f"{self.icons['ai']} AI routing models: scoring={scoring_model}, "
+            f"{self.icons['ai']} AI routing models: screening="
+            f"{self._screening_model()}, "
             f"terra={deep_config.terra_model}, sol={deep_config.sol_model}"
         )
         self.console.print(
@@ -1236,7 +1431,7 @@ class HorizonOrchestrator:
         """Return the inexpensive first-pass model configuration."""
         return self.config.ai.model_copy(
             update={
-                "model": self.config.ai.scoring_model or self.config.ai.model,
+                "model": self._screening_model(),
                 "reasoning_effort": None,
             }
         )

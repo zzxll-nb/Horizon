@@ -45,53 +45,6 @@ jobs:
             git checkout origin/dashboard-data -- "$snapshot" 2>/dev/null || true
           done
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install Horizon
-        run: python -m pip install -e .
-
-      - name: Prepare the local Horizon configuration
-        run: cp data/config.china-example.json data/config.json
-
-      - name: Generate the 24-hour Daily Briefing
-        id: briefing
-        continue-on-error: true
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: horizon --hours 24 --log-level WARNING
-
-      - name: Persist successful snapshots on the data branch
-        env:
-          STATE_DIR: ${{ runner.temp }}/dashboard-data
-          BRIEFING_OUTCOME: ${{ steps.briefing.outcome }}
-        run: |
-          if git show-ref --verify --quiet refs/remotes/origin/dashboard-data; then
-            git worktree add --detach "$STATE_DIR" origin/dashboard-data
-          else
-            git worktree add -b dashboard-data "$STATE_DIR"
-          fi
-          if [ "$BRIEFING_OUTCOME" = "success" ] && [ -f data/dashboard/latest.json ]; then
-            mkdir -p "$STATE_DIR/data/dashboard"
-            cp data/dashboard/latest.json "$STATE_DIR/data/dashboard/latest.json"
-            git -C "$STATE_DIR" add -f data/dashboard/latest.json
-          fi
-          if ! git -C "$STATE_DIR" diff --cached --quiet; then
-            git -C "$STATE_DIR" config user.name "github-actions[bot]"
-            git -C "$STATE_DIR" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git -C "$STATE_DIR" commit -m "chore: refresh dashboard snapshots"
-            git -C "$STATE_DIR" push origin HEAD:dashboard-data
-          fi
-          for snapshot in data/dashboard/latest.json data/market/latest.json; do
-            if [ -f "$STATE_DIR/$snapshot" ]; then
-              mkdir -p "$(dirname "$snapshot")"
-              cp "$STATE_DIR/$snapshot" "$snapshot"
-            else
-              rm -f "$snapshot"
-            fi
-          done
-
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -115,7 +68,7 @@ jobs:
 
       - name: Record task outcome
         run: |
-          echo "daily briefing: ${{ steps.briefing.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "daily briefing: reused existing dashboard snapshot (no AI calls)" >> "$GITHUB_STEP_SUMMARY"
           echo "static output: dashboard/out" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-pages-artifact@v3

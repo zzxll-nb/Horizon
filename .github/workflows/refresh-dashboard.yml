@@ -2,7 +2,9 @@ name: Refresh Dashboard Data
 
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    # 09:00 / 18:00 America/New_York. Both UTC variants are scheduled;
+    # the timezone gate below handles EDT and EST.
+    - cron: "0 13,14,22,23 * * *"
   workflow_dispatch:
 
 permissions:
@@ -15,7 +17,34 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  should-run:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.eastern-time.outputs.run }}
+      hours: ${{ steps.eastern-time.outputs.hours }}
+    steps:
+      - id: eastern-time
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          local_hour="$(TZ=America/New_York date +%H)"
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "hours=15" >> "$GITHUB_OUTPUT"
+          elif [ "$local_hour" = "09" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "hours=15" >> "$GITHUB_OUTPUT"
+          elif [ "$local_hour" = "18" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "hours=9" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "hours=0" >> "$GITHUB_OUTPUT"
+          fi
+
   refresh-and-deploy:
+    needs: should-run
+    if: needs.should-run.outputs.run == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +52,7 @@ jobs:
       - name: Restore the last successful snapshots
         run: |
           git fetch --no-tags origin '+refs/heads/dashboard-data:refs/remotes/origin/dashboard-data' || true
-          for snapshot in data/dashboard/latest.json data/market/latest.json; do
+          for snapshot in data/dashboard/latest.json data/dashboard/analysis-cache.json data/market/latest.json; do
             git checkout origin/dashboard-data -- "$snapshot" 2>/dev/null || true
           done
 
@@ -42,7 +71,8 @@ jobs:
         continue-on-error: true
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: horizon --hours 1 --skip-daily-summary --log-level WARNING
+          WINDOW_HOURS: ${{ needs.should-run.outputs.hours }}
+        run: horizon --hours "$WINDOW_HOURS" --skip-daily-summary --log-level WARNING
 
       - name: Refresh market snapshot
         id: market
@@ -64,6 +94,10 @@ jobs:
             mkdir -p "$STATE_DIR/data/dashboard"
             cp data/dashboard/latest.json "$STATE_DIR/data/dashboard/latest.json"
             git -C "$STATE_DIR" add -f data/dashboard/latest.json
+            if [ -f data/dashboard/analysis-cache.json ]; then
+              cp data/dashboard/analysis-cache.json "$STATE_DIR/data/dashboard/analysis-cache.json"
+              git -C "$STATE_DIR" add -f data/dashboard/analysis-cache.json
+            fi
           fi
           if [ "$MARKET_OUTCOME" = "success" ] && [ -f data/market/latest.json ]; then
             mkdir -p "$STATE_DIR/data/market"
@@ -76,7 +110,7 @@ jobs:
             git -C "$STATE_DIR" commit -m "chore: refresh dashboard snapshots"
             git -C "$STATE_DIR" push origin HEAD:dashboard-data
           fi
-          for snapshot in data/dashboard/latest.json data/market/latest.json; do
+          for snapshot in data/dashboard/latest.json data/dashboard/analysis-cache.json data/market/latest.json; do
             if [ -f "$STATE_DIR/$snapshot" ]; then
               mkdir -p "$(dirname "$snapshot")"
               cp "$STATE_DIR/$snapshot" "$snapshot"

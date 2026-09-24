@@ -36,6 +36,8 @@ class DeepAnalysisRoutingResult:
 
 
 def importance_score(item: ContentItem) -> float:
+    if item.processing and item.processing.review:
+        return item.processing.review.score
     if item.processing and item.processing.analysis:
         score = item.processing.analysis.score
         if score is not None:
@@ -57,6 +59,17 @@ def is_critical_event(item: ContentItem, config: DeepAnalysisConfig) -> bool:
     return any(keyword.casefold() in searchable for keyword in config.critical_keywords)
 
 
+def is_extreme_event(item: ContentItem, config: DeepAnalysisConfig) -> bool:
+    review = item.processing.review if item.processing else None
+    if review is None:
+        return False
+    return review.systemic_risk or (
+        review.critical_event
+        and review.complexity == "high"
+        and importance_score(item) >= max(config.sol_threshold, 9.0)
+    )
+
+
 def route_deep_analysis(
     items: list[ContentItem], config: DeepAnalysisConfig
 ) -> DeepAnalysisRoutingResult:
@@ -72,19 +85,39 @@ def route_deep_analysis(
     skipped = eligible[config.max_items_per_run :] + below_threshold
 
     critical_by_id = {
-        item.id: is_critical_event(item, config)
+        item.id: (
+            is_critical_event(item, config)
+            or bool(item.processing and item.processing.review and item.processing.review.critical_event)
+        )
         for item in selected
     }
+    extreme_by_id = {item.id: is_extreme_event(item, config) for item in selected}
     sol_candidates = [
         item
         for item in selected
         if importance_score(item) >= config.sol_threshold
         or critical_by_id[item.id]
+        or bool(
+            item.processing
+            and item.processing.review
+            and (
+                item.processing.review.systemic_risk
+                or (
+                    item.processing.review.complexity == "high"
+                    and item.processing.review.cross_asset_impact
+                )
+            )
+        )
     ]
+    sol_limit = (
+        config.sol_extreme_max_items
+        if sum(extreme_by_id.values()) >= 2
+        else config.sol_max_items
+    )
     sol_ids = {
         item.id
         for item in sorted(sol_candidates, key=importance_score, reverse=True)[
-            : config.sol_max_items
+            : sol_limit
         ]
     }
 
@@ -94,7 +127,10 @@ def route_deep_analysis(
         if item.id in sol_ids:
             effort = (
                 config.sol_high_reasoning_effort
-                if critical and config.sol_high_reasoning_for_critical
+                if (
+                    (critical or extreme_by_id[item.id])
+                    and config.sol_high_reasoning_for_critical
+                )
                 else config.sol_reasoning_effort
             )
             routed.append(

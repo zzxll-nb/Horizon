@@ -62,6 +62,23 @@ class ContentAnalysis(BaseModel):
     reason: str
     summary: str
     tags: List[str] = Field(default_factory=list)
+    relevance: Literal["relevant", "uncertain", "irrelevant"] = "uncertain"
+    obvious_noise: bool = False
+
+
+class ValueReview(BaseModel):
+    """Concise Terra second-pass investment-value judgment."""
+
+    mini_score: Optional[float] = Field(default=None, ge=0, le=10)
+    score: float = Field(ge=0, le=10)
+    decision: Literal["select", "reject"]
+    reason: str
+    hidden_importance: bool = False
+    second_order_impact: bool = False
+    cross_asset_impact: bool = False
+    systemic_risk: bool = False
+    critical_event: bool = False
+    complexity: Literal["low", "medium", "high"] = "medium"
 
 
 class ArtifactSource(BaseModel):
@@ -97,6 +114,7 @@ class ProcessingResult(BaseModel):
 
     classification: ClassificationResult
     analysis: Optional[ContentAnalysis] = None
+    review: Optional[ValueReview] = None
     artifacts: Dict[str, ContentArtifact] = Field(default_factory=dict)
 
 
@@ -187,6 +205,37 @@ AI_PROVIDER_DEFAULTS = {
 ReasoningEffort = Literal["none", "low", "medium", "high", "xhigh", "max"]
 
 
+class ReviewConfig(BaseModel):
+    """High-recall screening and Terra value-review configuration."""
+
+    enabled: bool = False
+    model: str = "gpt-5.6-terra"
+    reasoning_effort: ReasoningEffort = "medium"
+    mini_reject_threshold: float = Field(default=5.5, ge=0, le=10)
+    high_priority_threshold: float = Field(default=7.5, ge=0, le=10)
+    selection_threshold: float = Field(default=7.0, ge=0, le=10)
+    max_items: int = Field(default=6, ge=1, le=6)
+    batch_size: int = Field(default=8, ge=1, le=20)
+    protected_keywords: List[str] = Field(
+        default_factory=lambda: [
+            "federal reserve", "fomc", "美联储", "interest rate", "利率",
+            "inflation", "通胀", "cpi", "pce", "treasury yield", "债券收益率",
+            "earnings", "财报", "guidance", "指引", "semiconductor", "半导体",
+            "ai capex", "人工智能资本开支", "data center", "数据中心",
+            "power demand", "电力需求", "merger", "acquisition", "并购",
+            "systemic risk", "系统性金融风险", "regulation", "监管",
+            "crude oil", "原油", "gold", "黄金", "dollar", "美元",
+            "bitcoin", "比特币", "liquidity", "流动性",
+        ]
+    )
+
+    @model_validator(mode="after")
+    def validate_thresholds(self) -> "ReviewConfig":
+        if self.high_priority_threshold < self.mini_reject_threshold:
+            raise ValueError("high_priority_threshold must be >= mini_reject_threshold")
+        return self
+
+
 class DeepAnalysisConfig(BaseModel):
     """Model routing and budget limits for final-item deep analysis."""
 
@@ -199,8 +248,9 @@ class DeepAnalysisConfig(BaseModel):
     sol_high_reasoning_for_critical: bool = True
     minimum_score: float = Field(default=7.0, ge=0, le=10)
     sol_threshold: float = Field(default=8.5, ge=0, le=10)
-    sol_max_items: int = Field(default=3, ge=0, le=8)
-    max_items_per_run: int = Field(default=8, ge=1, le=8)
+    sol_max_items: int = Field(default=1, ge=0, le=2)
+    sol_extreme_max_items: int = Field(default=2, ge=0, le=2)
+    max_items_per_run: int = Field(default=6, ge=1, le=6)
     critical_keywords: List[str] = Field(
         default_factory=lambda: [
             "federal reserve",
@@ -244,6 +294,8 @@ class DeepAnalysisConfig(BaseModel):
     def validate_score_thresholds(self) -> "DeepAnalysisConfig":
         if self.sol_threshold < self.minimum_score:
             raise ValueError("sol_threshold must be >= minimum_score")
+        if self.sol_extreme_max_items < self.sol_max_items:
+            raise ValueError("sol_extreme_max_items must be >= sol_max_items")
         return self
 
 
@@ -253,6 +305,7 @@ class AIConfig(BaseModel):
     provider: AIProvider
     provider_chain: Optional[str] = None
     model: str
+    screening_model: Optional[str] = None
     scoring_model: Optional[str] = None
     base_url: Optional[str] = None
     api_key_env: str
@@ -263,6 +316,7 @@ class AIConfig(BaseModel):
     enrichment_concurrency: int = 1
     languages: List[str] = Field(default_factory=lambda: ["en"])
     reasoning_effort: Optional[ReasoningEffort] = None
+    review: ReviewConfig = Field(default_factory=ReviewConfig)
     deep_analysis: DeepAnalysisConfig = Field(default_factory=DeepAnalysisConfig)
     # Azure OpenAI specific; required when provider == AZURE
     azure_endpoint_env: Optional[str] = None

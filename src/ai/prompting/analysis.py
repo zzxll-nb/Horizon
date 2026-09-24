@@ -9,7 +9,14 @@ ANALYSIS_RULES = f"""You are a content curator evaluating an item under the supp
 - {UNTRUSTED_INPUT_RULE}
 - Base the analysis only on the supplied item and its metadata.
 {EVIDENCE_RULES}
-- Apply the profile's evaluation policy consistently."""
+- Apply the profile's evaluation policy consistently.
+- This is a high-recall first pass. Prefer relevance recall over precision: when
+  an item may have financial-market, listed-company, macroeconomic, AI,
+  semiconductor, energy, regulatory, or second-order investment implications,
+  retain it as relevant or uncertain rather than dismissing it.
+- Set obvious_noise=true only for unmistakably irrelevant entertainment,
+  lifestyle, local-crime, spam, or other content with no plausible investment,
+  macro, industry, or AI significance."""
 
 
 def analysis_system_prompt(profile: LoadedProfile) -> str:
@@ -26,7 +33,9 @@ Return valid JSON only:
   "score": <number from 0 to 10>,
   "reason": "<concise explanation>",
   "summary": "<one-sentence summary>",
-  "tags": ["<tag>", "..."]
+  "tags": ["<tag>", "..."],
+  "relevance": "relevant | uncertain | irrelevant",
+  "obvious_noise": <boolean>
 }}"""
 
 

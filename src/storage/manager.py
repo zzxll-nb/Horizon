@@ -72,6 +72,7 @@ class StorageManager:
         self.config_path = Path(config_path) if config_path is not None else self.data_dir / "config.json"
         self.summaries_dir = self.data_dir / "summaries"
         self.dashboard_dir = self.data_dir / "dashboard"
+        self.analysis_cache_path = self.dashboard_dir / "analysis-cache.json"
         self.market_dir = self.data_dir / "market"
 
         self.data_dir.mkdir(parents=True, exist_ok=True)
@@ -147,6 +148,23 @@ class StorageManager:
         _atomic_write_text(latest_path, content)
 
         return latest_path, archive_path
+
+    def load_analysis_cache(self) -> dict[str, Any]:
+        """Load the optional long-analysis reuse cache."""
+        if not self.analysis_cache_path.exists():
+            return {}
+        try:
+            value = json.loads(self.analysis_cache_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            logger.warning("Unable to load analysis cache: %s", error)
+            return {}
+        return value if isinstance(value, dict) else {}
+
+    def save_analysis_cache(self, cache: dict[str, Any]) -> Path:
+        """Atomically persist long-analysis artifacts for later runs."""
+        content = json.dumps(cache, indent=2, ensure_ascii=False) + "\n"
+        _atomic_write_text(self.analysis_cache_path, content)
+        return self.analysis_cache_path
 
     def save_market_snapshot(self, snapshot: dict[str, Any]) -> Path:
         """Atomically save the latest market snapshot used by Dashboard."""
