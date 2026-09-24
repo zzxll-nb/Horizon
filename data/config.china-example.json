@@ -1,5 +1,5 @@
 {
-  "ai": {"provider":"openai","model":"gpt-4.1-mini","api_key_env":"OPENAI_API_KEY","temperature":0.2,"max_tokens":4096,"throttle_sec":0,"analysis_concurrency":3,"enrichment_concurrency":3,"languages":["zh"]},
+  "ai": {"provider":"openai","model":"gpt-4.1-mini","scoring_model":"gpt-4.1-mini","api_key_env":"OPENAI_API_KEY","temperature":0.2,"max_tokens":8192,"throttle_sec":0,"analysis_concurrency":3,"enrichment_concurrency":3,"languages":["zh"],"deep_analysis":{"enabled":true,"terra_model":"gpt-5.6-terra","sol_model":"gpt-5.6-sol","terra_reasoning_effort":"medium","sol_reasoning_effort":"medium","sol_high_reasoning_effort":"high","sol_high_reasoning_for_critical":true,"minimum_score":7.0,"sol_threshold":8.5,"sol_max_items":3,"max_items_per_run":8}},
   "processing": {
     "profiles_dir":"profiles",
     "default_profile":"china-news",
@@ -7,7 +7,7 @@
       "china-news":{"threshold":7.0,"topic_dedup":true},
       "us-news":{"threshold":7.0,"topic_dedup":true},
       "international-news":{"threshold":7.0,"topic_dedup":true},
-      "finance-news":{"threshold":7.5,"topic_dedup":true},
+      "finance-news":{"threshold":7.0,"topic_dedup":true},
       "tech-ai-news":{"threshold":7.0,"topic_dedup":true}
     }
   },

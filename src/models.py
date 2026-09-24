@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from enum import Enum
 import re
 from typing import Annotated, Literal, Optional, List, Dict, Any, NamedTuple, Union
-from pydantic import BaseModel, ConfigDict, HttpUrl, Field, field_validator
+from pydantic import BaseModel, ConfigDict, HttpUrl, Field, field_validator, model_validator
 
 
 class SourceType(str, Enum):
@@ -184,12 +184,76 @@ AI_PROVIDER_DEFAULTS = {
 }
 
 
+ReasoningEffort = Literal["none", "low", "medium", "high", "xhigh", "max"]
+
+
+class DeepAnalysisConfig(BaseModel):
+    """Model routing and budget limits for final-item deep analysis."""
+
+    enabled: bool = False
+    terra_model: str = "gpt-5.6-terra"
+    sol_model: str = "gpt-5.6-sol"
+    terra_reasoning_effort: ReasoningEffort = "medium"
+    sol_reasoning_effort: ReasoningEffort = "medium"
+    sol_high_reasoning_effort: ReasoningEffort = "high"
+    sol_high_reasoning_for_critical: bool = True
+    minimum_score: float = Field(default=7.0, ge=0, le=10)
+    sol_threshold: float = Field(default=8.5, ge=0, le=10)
+    sol_max_items: int = Field(default=3, ge=0, le=8)
+    max_items_per_run: int = Field(default=8, ge=1, le=8)
+    critical_keywords: List[str] = Field(
+        default_factory=lambda: [
+            "federal reserve",
+            "fomc",
+            "美联储",
+            "european central bank",
+            "欧洲央行",
+            "bank of japan",
+            "日本央行",
+            "systemic risk",
+            "系统性金融风险",
+            "liquidity crisis",
+            "流动性危机",
+            "nonfarm payroll",
+            "非农",
+            "nvidia",
+            "openai",
+            "anthropic",
+            "semiconductor supply chain",
+            "半导体供应链",
+            "treasury yield",
+            "美债收益率",
+        ]
+    )
+
+    @field_validator("terra_model", "sol_model")
+    @classmethod
+    def validate_model_name(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("deep-analysis model names must be non-empty")
+        return value
+
+    @field_validator("critical_keywords")
+    @classmethod
+    def validate_critical_keywords(cls, value: List[str]) -> List[str]:
+        if any(not keyword.strip() for keyword in value):
+            raise ValueError("critical_keywords entries must be non-empty")
+        return value
+
+    @model_validator(mode="after")
+    def validate_score_thresholds(self) -> "DeepAnalysisConfig":
+        if self.sol_threshold < self.minimum_score:
+            raise ValueError("sol_threshold must be >= minimum_score")
+        return self
+
+
 class AIConfig(BaseModel):
     """AI client configuration."""
 
     provider: AIProvider
     provider_chain: Optional[str] = None
     model: str
+    scoring_model: Optional[str] = None
     base_url: Optional[str] = None
     api_key_env: str
     temperature: float = 0.3
@@ -198,6 +262,8 @@ class AIConfig(BaseModel):
     analysis_concurrency: int = 1
     enrichment_concurrency: int = 1
     languages: List[str] = Field(default_factory=lambda: ["en"])
+    reasoning_effort: Optional[ReasoningEffort] = None
+    deep_analysis: DeepAnalysisConfig = Field(default_factory=DeepAnalysisConfig)
     # Azure OpenAI specific; required when provider == AZURE
     azure_endpoint_env: Optional[str] = None
     api_version: Optional[str] = None

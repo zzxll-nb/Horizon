@@ -11,7 +11,7 @@ import httpx
 from rich.console import Console
 
 from .console_icons import get_icons
-from .models import Config, ContentItem
+from .models import AIConfig, Config, ContentItem
 from .storage.manager import StorageManager, safe_output_path
 from .services.email import EmailManager
 from .services.webhook import WebhookNotifier
@@ -31,6 +31,7 @@ from .ai.client import create_ai_client
 from .ai.analyzer import ContentAnalyzer
 from .ai.summarizer import DailySummarizer
 from .ai.enricher import ContentEnricher, EnrichmentBatchResult
+from .ai.router import route_deep_analysis
 from .ai.tokens import get_usage_snapshot
 from .processing import ProfileRegistry
 from .processing.tools import ToolRegistry
@@ -292,7 +293,7 @@ class HorizonOrchestrator:
             )
             self.console.print(
                 f"{self.icons['ai']} AI processing: input={len(merged_items)}, "
-                f"classified={classified_count}, analyzed={analyzed_count}\n"
+                f"classified={classified_count}, scored={analyzed_count}\n"
             )
 
             # 5. Filter, deduplicate, and balance the digest
@@ -748,7 +749,7 @@ class HorizonOrchestrator:
         items_text = "\n\n".join(lines)
 
         try:
-            ai_client = create_ai_client(self.config.ai)
+            ai_client = create_ai_client(self._scoring_ai_config())
             response = await ai_client.complete(
                 system=TOPIC_DEDUP_SYSTEM,
                 user=TOPIC_DEDUP_USER.format(items=items_text),
@@ -1122,7 +1123,7 @@ class HorizonOrchestrator:
         self.console.print(
             f"   Re-analyzing {len(expanded)} Twitter items with reply context...\n"
         )
-        ai_client = create_ai_client(self.config.ai)
+        ai_client = create_ai_client(self._scoring_ai_config())
         analyzer = ContentAnalyzer(ai_client, self.profiles, console=self.console)
         await analyzer.analyze_batch(expanded)
 
@@ -1135,13 +1136,67 @@ class HorizonOrchestrator:
         Args:
             items: Important items to enrich (modified in-place)
         """
+        deep_config = self.config.ai.deep_analysis
         if not items:
+            if deep_config.enabled:
+                scoring_model = self.config.ai.scoring_model or self.config.ai.model
+                self.console.print(
+                    f"{self.icons['ai']} AI routing models: scoring={scoring_model}, "
+                    f"terra={deep_config.terra_model}, sol={deep_config.sol_model}"
+                )
+                self.console.print(
+                    f"{self.icons['filter']} AI routing: selected=0, terra=0, "
+                    "sol=0, skipped=0"
+                )
             return EnrichmentBatchResult()
 
+        if not deep_config.enabled:
+            return await self._enrich_with_config(items, self.config.ai)
+
+        routing = route_deep_analysis(items, deep_config)
+        items[:] = routing.selected_items
+        scoring_model = self.config.ai.scoring_model or self.config.ai.model
+        self.console.print(
+            f"{self.icons['ai']} AI routing models: scoring={scoring_model}, "
+            f"terra={deep_config.terra_model}, sol={deep_config.sol_model}"
+        )
+        self.console.print(
+            f"{self.icons['filter']} AI routing: selected={len(routing.routed)}, "
+            f"terra={len(routing.terra)}, sol={len(routing.sol)}, "
+            f"skipped={len(routing.skipped)}"
+        )
+
+        result = EnrichmentBatchResult()
+        groups: Dict[tuple[str, str], List[ContentItem]] = defaultdict(list)
+        for entry in routing.routed:
+            model = (
+                deep_config.sol_model
+                if entry.tier == "sol"
+                else deep_config.terra_model
+            )
+            groups[(model, entry.reasoning_effort)].append(entry.item)
+
+        for (model, reasoning_effort), group_items in groups.items():
+            runtime_config = self.config.ai.model_copy(
+                update={
+                    "model": model,
+                    "reasoning_effort": reasoning_effort,
+                    "provider_chain": None,
+                }
+            )
+            batch = await self._enrich_with_config(group_items, runtime_config)
+            result.succeeded_ids.extend(batch.succeeded_ids)
+            result.failures.update(batch.failures)
+        return result
+
+    async def _enrich_with_config(
+        self, items: List[ContentItem], ai_config: AIConfig
+    ) -> EnrichmentBatchResult:
+        """Run enrichment for one routed model/reasoning-effort group."""
         self.console.print(
             f"{self.icons['enrich']} Enriching with background knowledge..."
         )
-        ai_client = create_ai_client(self.config.ai)
+        ai_client = create_ai_client(ai_config)
         enricher = ContentEnricher(
             ai_client,
             self.profiles,
@@ -1172,10 +1227,19 @@ class HorizonOrchestrator:
         """
         self.console.print(f"{self.icons['ai']} Analyzing content with AI...")
 
-        ai_client = create_ai_client(self.config.ai)
+        ai_client = create_ai_client(self._scoring_ai_config())
         analyzer = ContentAnalyzer(ai_client, self.profiles, console=self.console)
 
         return await analyzer.analyze_batch(items)
+
+    def _scoring_ai_config(self) -> AIConfig:
+        """Return the inexpensive first-pass model configuration."""
+        return self.config.ai.model_copy(
+            update={
+                "model": self.config.ai.scoring_model or self.config.ai.model,
+                "reasoning_effort": None,
+            }
+        )
 
     async def _generate_summary(
         self,

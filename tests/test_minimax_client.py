@@ -205,6 +205,30 @@ class TestOpenAIClientComplete:
         call_kwargs = mock_create.call_args[1]
         assert call_kwargs.get("response_format") == {"type": "json_object"}
 
+    def test_openai_reasoning_effort_is_forwarded(self, monkeypatch):
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+        client = OpenAIClient(_make_config(
+            provider=AIProvider.OPENAI,
+            model="gpt-5.6-terra",
+            api_key_env="OPENAI_API_KEY",
+            reasoning_effort="medium",
+        ))
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = "{}"
+        mock_response.usage.prompt_tokens = 1
+        mock_response.usage.completion_tokens = 1
+
+        with patch.object(
+            client.client.chat.completions, "create", new_callable=AsyncMock
+        ) as mock_create:
+            mock_create.return_value = mock_response
+            asyncio.run(client.complete(system="test", user="hello"))
+
+        call_kwargs = mock_create.call_args[1]
+        assert call_kwargs["reasoning_effort"] == "medium"
+        assert "max_completion_tokens" in call_kwargs
+
 
 class TestTemperatureFallback:
     """Retry-without-temperature path for models that deprecated temperature.

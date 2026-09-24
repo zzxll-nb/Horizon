@@ -216,6 +216,7 @@ class OpenAIClient(AIClient):
         self.temperature = config.temperature
         self.max_tokens = config.max_tokens
         self.provider = config.provider.value
+        self.reasoning_effort = config.reasoning_effort
         # Some newer models (e.g. Claude Opus 4.7 on Bedrock Converse) reject
         # `temperature`. We learn this on first 400 and stop sending it.
         self._supports_temperature = True
@@ -326,6 +327,8 @@ class OpenAIClient(AIClient):
         request_kwargs[token_param] = max_tokens
         if include_temperature:
             request_kwargs["temperature"] = temperature
+        if self.reasoning_effort is not None:
+            request_kwargs["reasoning_effort"] = self.reasoning_effort
         if self.provider not in self._NO_RESPONSE_FORMAT:
             request_kwargs["response_format"] = {"type": "json_object"}
         return await self.client.chat.completions.create(**request_kwargs)
@@ -661,6 +664,7 @@ def _create_chained_client(config: AIConfig) -> ChainedAIClient:
             analysis_concurrency=config.analysis_concurrency,
             enrichment_concurrency=config.enrichment_concurrency,
             languages=config.languages,
+            reasoning_effort=config.reasoning_effort,
             azure_endpoint_env=(
                 config.azure_endpoint_env or defaults.get("azure_endpoint_env")
                 if provider == AIProvider.AZURE
