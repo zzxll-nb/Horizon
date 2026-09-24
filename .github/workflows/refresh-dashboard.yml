@@ -41,7 +41,7 @@ jobs:
         id: news
         continue-on-error: true
         env:
-          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: horizon --hours 1 --skip-daily-summary --log-level WARNING
 
       - name: Refresh market snapshot
