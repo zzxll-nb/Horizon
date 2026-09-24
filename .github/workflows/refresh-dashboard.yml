@@ -127,8 +127,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: pnpm
-          cache-dependency-path: dashboard/pnpm-lock.yaml
 
       - name: Build static Dashboard
         env:

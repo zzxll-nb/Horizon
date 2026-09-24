@@ -14,10 +14,10 @@ import {
 import type { CategoryId, DashboardSnapshot } from "@/types/dashboard";
 
 const icons: Record<CategoryId, LucideIcon> = {
-  china: Landmark,
-  us: ShieldCheck,
-  international: Globe2,
+  markets: Globe2,
   finance: BriefcaseBusiness,
+  investing: ShieldCheck,
+  macro: Landmark,
   tech_ai: Cpu,
 };
 

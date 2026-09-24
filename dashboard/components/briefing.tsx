@@ -2,7 +2,7 @@ import { Layers3 } from "lucide-react";
 
 import type { BriefingEvent, DashboardSnapshot } from "@/types/dashboard";
 
-const categoryLabels = { china: "中国", us: "美国", international: "国际", finance: "财经", tech_ai: "科技 / AI" } as const;
+const categoryLabels = { markets: "市场", finance: "财经", investing: "投资", macro: "宏观", tech_ai: "科技 / AI" } as const;
 
 export function Briefing({ briefing, isSample }: { briefing: DashboardSnapshot["briefing"]; isSample: boolean }) {
   return (

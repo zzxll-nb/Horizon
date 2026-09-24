@@ -1,59 +1,59 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "data_status": "sample",
-  "fixture_note": "示例/fixture：以下事件、数字与分析仅用于验证 DashboardSnapshot 1.1 和界面，不代表实时新闻或投资建议。",
+  "fixture_note": "示例/fixture：以下事件、数字与分析仅用于验证 DashboardSnapshot 1.2 和界面，不代表实时新闻或投资建议。",
   "generated_at": "2026-01-15T08:30:00Z",
   "period_start": "2026-01-14T08:30:00Z",
   "period_end": "2026-01-15T08:30:00Z",
   "briefing": {
     "title": "今日 AI Briefing（示例）",
-    "summary": "本期示例覆盖中国政策、美国宏观、国际航运、公司财报和AI半导体，用于验证研究型深度分析展示。",
+    "summary": "本期示例覆盖市场、财经、投资、宏观和科技 / AI，用于验证研究型深度分析展示。",
     "events": [
       {
-        "id": "rss:sample-china:policy-001",
-        "title_cn": "【样例】先进制造设备更新政策进入实施阶段",
-        "summary": "样例政策明确先进制造与绿色设备更新的支持方向、申报窗口和分阶段执行安排，实际财政规模与地方配套仍待后续细则确认。",
-        "why_important": "政策能否转化为新增订单，将影响制造业资本开支、工业品需求和相关企业利润预期。",
-        "category": "china",
+        "id": "rss:sample-investing:capex-001",
+        "title_cn": "【样例】全球制造业设备投资计划进入执行阶段",
+        "summary": "样例企业投资计划显示先进制造与绿色设备更新需求增加，但订单转化、融资成本和项目回报仍需后续经营数据确认。",
+        "why_important": "设备投资能否转化为新增订单，将影响制造业资本开支、工业品需求和相关企业利润预期。",
+        "category": "investing",
         "importance": {
           "score": 92,
           "level": "high"
         },
         "source_count": 1,
         "source_names": [
-          "示例政策来源"
+          "示例投资研究来源"
         ],
         "published_at": "2026-01-15T01:10:00Z"
       },
       {
-        "id": "rss:sample-us:economy-001",
+        "id": "rss:sample-macro:economy-001",
         "title_cn": "【样例】美国通胀降温但就业仍具韧性",
         "summary": "样例数据显示美国总体通胀继续回落，就业增长保持韧性，但服务价格、工资增速与历史数据修订仍令利率路径存在不确定性。",
         "why_important": "通胀和就业组合会直接改变美联储政策预期，并通过美债收益率、美元和权益估值影响全球市场。",
-        "category": "us",
+        "category": "macro",
         "importance": {
           "score": 88,
           "level": "high"
         },
         "source_count": 1,
         "source_names": [
-          "示例美国宏观来源"
+          "示例宏观数据来源"
         ],
         "published_at": "2026-01-15T02:20:00Z"
       },
       {
-        "id": "gdelt:sample:diplomacy-001",
-        "title_cn": "【样例】多国建立区域安全与航运协调机制",
-        "summary": "多国样例声明建立定期风险通报与航运协调机制，后续仍需通过实际通行量、保险费率和运输时间验证执行效果。",
+        "id": "gdelt:sample:markets-shipping-001",
+        "title_cn": "【样例】关键航线运价与保险风险溢价出现联动",
+        "summary": "样例数据显示关键航线运价、保险费率和运输时间同步变化，市场仍需通过实际通行量验证供应链风险是否持续缓解。",
         "why_important": "航运安全会影响能源风险溢价、全球运输成本和商品通胀，并进一步传导至央行政策与企业利润。",
-        "category": "international",
+        "category": "markets",
         "importance": {
           "score": 84,
           "level": "high"
         },
         "source_count": 1,
         "source_names": [
-          "示例国际来源"
+          "示例市场数据来源"
         ],
         "published_at": "2026-01-15T03:00:00Z"
       },
@@ -93,12 +93,12 @@
   },
   "news": [
     {
-      "id": "rss:sample-china:policy-001",
-      "title_cn": "【样例】先进制造设备更新政策进入实施阶段",
-      "title_original": "Sample: Advanced Manufacturing Upgrade Policy Enters Implementation",
-      "summary": "样例政策明确先进制造与绿色设备更新的支持方向、申报窗口和分阶段执行安排，实际财政规模与地方配套仍待后续细则确认。",
+      "id": "rss:sample-investing:capex-001",
+      "title_cn": "【样例】全球制造业设备投资计划进入执行阶段",
+      "title_original": "Sample: Global Manufacturing Equipment Investment Plans Enter Execution",
+      "summary": "样例企业投资计划显示先进制造与绿色设备更新需求增加，但订单转化、融资成本和项目回报仍需后续经营数据确认。",
       "analysis": "【事实层面】本样例设定为一项面向先进制造与绿色设备更新的政策安排，已知信息包括支持方向、申报窗口和分阶段执行时间，但并未假设尚未公布的财政规模、补贴比例或地方配套额度。对企业而言，政策首先影响的是订单可见度和投资回收期：如果设备采购补贴、税收抵扣或融资支持能够较快落地，自动化设备、工业软件、节能改造、电网设备以及高端零部件供应商可能更早看到询价和合同转化；下游制造企业则可能通过降低初始资本支出提高更新意愿。不过，收入确认通常滞后于政策宣布，项目验收、地方预算、客户自有资金和设备交付周期都会决定实际利润贡献，因此不能把政策方向直接等同于上市公司当期业绩。\n\n从产业供需看，短期需求集中释放可能改善部分设备厂商的产能利用率，但也可能带来原材料、关键零部件和工程服务价格上升。如果行业供给充足，新增订单更可能转化为销量增长；如果核心部件受限或同质化竞争激烈，企业可能以价格换份额，收入增长却未必带来毛利率改善。政策若强调国产化、安全可控和能效标准，竞争优势可能向具备认证、渠道和售后能力的头部企业集中，中小厂商则面临研发投入和合规成本上升。\n\n宏观传导上，这类政策能否形成有效增量，需要结合信贷需求、实际利率、企业盈利预期和地方财政约束观察。若融资成本下降、工业企业利润改善且出口订单稳定，政策可能放大制造业资本开支，对工业品需求、用电量和中长期贷款形成支持；若企业仍担心终端需求不足，即使补贴存在，也可能只提前原有采购而非创造新增投资。人民币汇率和海外贸易环境也会影响进口设备成本与出口型企业现金流，进而改变投资意愿。\n\n资产关联应以传导链而非题材标签判断。制造业指数、工业自动化、电力设备、基础材料和相关银行信贷可能受到关注，但不同公司的订单结构、客户集中度和应收账款质量差异很大。偏正面的路径是政策细则清晰、地方资金及时到位、订单与产能利用率同步上升，且价格竞争可控；偏负面的路径是执行延迟、地方配套不足、企业仅替换原有预算，或者原材料上涨侵蚀利润。市场可能先交易政策预期，随后转向验证订单、现金流和利润率，估值能否维持最终仍取决于真实业绩而非文件数量。",
-      "why_important": "政策能否转化为新增订单，将影响制造业资本开支、工业品需求和相关企业利润预期。",
+      "why_important": "设备投资能否转化为新增订单，将影响制造业资本开支、工业品需求和相关企业利润预期。",
       "watch_factors": [
         "地方配套资金与申报进度",
         "制造业中长期贷款和设备订单",
@@ -110,7 +110,7 @@
         "电力设备行业：能效改造与配电需求",
         "制造业指数：资本开支预期"
       ],
-      "category": "china",
+      "category": "investing",
       "importance": {
         "score": 92,
         "level": "high"
@@ -119,16 +119,16 @@
       "updated_at": "2026-01-15T01:35:00Z",
       "sources": [
         {
-          "name": "示例政策来源",
-          "url": "https://example.com/sample/china-policy",
+          "name": "示例投资研究来源",
+          "url": "https://example.com/sample/industrial-capex",
           "published_at": "2026-01-15T01:10:00Z"
         }
       ],
-      "primary_source": "示例政策来源",
-      "primary_url": "https://example.com/sample/china-policy"
+      "primary_source": "示例投资研究来源",
+      "primary_url": "https://example.com/sample/industrial-capex"
     },
     {
-      "id": "rss:sample-us:economy-001",
+      "id": "rss:sample-macro:economy-001",
       "title_cn": "【样例】美国通胀降温但就业仍具韧性",
       "title_original": "Sample: US Inflation Cools While Employment Remains Resilient",
       "summary": "样例数据显示美国总体通胀继续回落，就业增长保持韧性，但服务价格、工资增速与历史数据修订仍令利率路径存在不确定性。",
@@ -147,7 +147,7 @@
         "美国国债：政策路径重新定价",
         "美元指数：利差与避险需求"
       ],
-      "category": "us",
+      "category": "macro",
       "importance": {
         "score": 88,
         "level": "high"
@@ -156,19 +156,19 @@
       "updated_at": "2026-01-15T02:50:00Z",
       "sources": [
         {
-          "name": "示例美国宏观来源",
-          "url": "https://example.com/sample/us-economy",
+          "name": "示例宏观数据来源",
+          "url": "https://example.com/sample/macro-economy",
           "published_at": "2026-01-15T02:20:00Z"
         }
       ],
-      "primary_source": "示例美国宏观来源",
-      "primary_url": "https://example.com/sample/us-economy"
+      "primary_source": "示例宏观数据来源",
+      "primary_url": "https://example.com/sample/macro-economy"
     },
     {
-      "id": "gdelt:sample:diplomacy-001",
-      "title_cn": "【样例】多国建立区域安全与航运协调机制",
-      "title_original": "Sample: Countries Establish Regional Security and Shipping Coordination",
-      "summary": "多国样例声明建立定期风险通报与航运协调机制，后续仍需通过实际通行量、保险费率和运输时间验证执行效果。",
+      "id": "gdelt:sample:markets-shipping-001",
+      "title_cn": "【样例】关键航线运价与保险风险溢价出现联动",
+      "title_original": "Sample: Shipping Rates and Insurance Risk Premiums Move Together",
+      "summary": "样例数据显示关键航线运价、保险费率和运输时间同步变化，市场仍需通过实际通行量验证供应链风险是否持续缓解。",
       "analysis": "【事实层面】本样例描述多国建立区域安全与航运协调机制，已确认的内容仅包括定期沟通、风险通报和后续会议安排，并不假设冲突已经结束或运输安全已经完全恢复。对金融市场而言，关键并不是声明本身，而是它能否降低航线中断、保险费率上升和交付延迟的概率。航运公司、能源贸易商、制造企业和零售商会根据实际通行时间与承保条件调整库存和运价，外交机制只有转化为可观察的运营改善，才会影响成本和利润。\n\n直接影响首先出现在运输和供应链。若主要航线恢复稳定，集装箱周转效率提高，绕行里程、燃油消耗和保险附加费可能下降，进口商的到岸成本与安全库存需求随之缓解。航运企业则可能面对运价从高位回落，收入端受压但运营不确定性降低。航空、化工和制造业对能源及交付周期敏感，成本改善可能逐步反映在毛利率；然而长期合同、库存计价和套期保值会造成时间滞后，不能用现货运价变化直接推算季度利润。\n\n二阶影响连接能源、通胀和货币政策。如果安全风险下降压低原油风险溢价和运输成本，商品通胀可能边际缓和，为主要央行提供更多政策灵活性；如果局势再次升级，油价和天然气价格上升可能推高通胀预期与债券收益率，尤其影响能源进口国的贸易余额和汇率。美元可能在风险规避阶段走强，而黄金、能源和国防相关资产可能获得避险或供给风险溢价。对新兴市场而言，外部融资成本、食品能源进口账单和资本流动会共同决定影响方向。\n\n偏正面的路径是沟通机制持续运作、实际袭击或扣押事件减少、航运保险和运价连续回落，企业能够降低库存并恢复正常交付；偏负面的路径是机制缺乏约束力、局部事件重新升级，或者主要参与方政策目标分歧扩大。即使风险下降，也要警惕市场已经提前反映乐观预期，相关资产未必继续同方向运行。值得关注的不是一次会议措辞，而是后续通行量、油轮与集装箱运价、保险报价、港口等待时间和能源库存是否同步改善，这些变量才能验证外交进展是否进入实体经济。",
       "why_important": "航运安全会影响能源风险溢价、全球运输成本和商品通胀，并进一步传导至央行政策与企业利润。",
       "watch_factors": [
@@ -184,7 +184,7 @@
         "黄金：风险规避需求",
         "能源进口国货币：贸易条件变化"
       ],
-      "category": "international",
+      "category": "markets",
       "importance": {
         "score": 84,
         "level": "high"
@@ -193,13 +193,13 @@
       "updated_at": null,
       "sources": [
         {
-          "name": "示例国际来源",
-          "url": "https://example.com/sample/shipping-security",
+          "name": "示例市场数据来源",
+          "url": "https://example.com/sample/shipping-markets",
           "published_at": "2026-01-15T03:00:00Z"
         }
       ],
-      "primary_source": "示例国际来源",
-      "primary_url": "https://example.com/sample/shipping-security"
+      "primary_source": "示例市场数据来源",
+      "primary_url": "https://example.com/sample/shipping-markets"
     },
     {
       "id": "rss:sample-finance:earnings-001",
@@ -278,20 +278,20 @@
   ],
   "categories": [
     {
-      "id": "china",
-      "display_name": "中国"
-    },
-    {
-      "id": "us",
-      "display_name": "美国"
-    },
-    {
-      "id": "international",
-      "display_name": "国际"
+      "id": "markets",
+      "display_name": "市场"
     },
     {
       "id": "finance",
       "display_name": "财经"
+    },
+    {
+      "id": "investing",
+      "display_name": "投资"
+    },
+    {
+      "id": "macro",
+      "display_name": "宏观"
     },
     {
       "id": "tech_ai",

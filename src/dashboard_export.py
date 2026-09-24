@@ -11,19 +11,19 @@ from .models import ContentBlock, ContentItem
 
 logger = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "1.1"
+SCHEMA_VERSION = "1.2"
 CATEGORY_MAP = {
-    "china-news": "china",
-    "us-news": "us",
-    "international-news": "international",
+    "markets-news": "markets",
     "finance-news": "finance",
+    "investing-news": "investing",
+    "macro-news": "macro",
     "tech-ai-news": "tech_ai",
 }
 CATEGORIES = [
-    {"id": "china", "display_name": "中国"},
-    {"id": "us", "display_name": "美国"},
-    {"id": "international", "display_name": "国际"},
+    {"id": "markets", "display_name": "市场"},
     {"id": "finance", "display_name": "财经"},
+    {"id": "investing", "display_name": "投资"},
+    {"id": "macro", "display_name": "宏观"},
     {"id": "tech_ai", "display_name": "科技 / AI"},
 ]
 

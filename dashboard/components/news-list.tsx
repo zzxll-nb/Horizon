@@ -3,7 +3,7 @@ import { ArrowUpRight, ChevronDown, Layers3 } from "lucide-react";
 import { Importance } from "@/components/briefing";
 import type { DashboardSnapshot, NewsEvent } from "@/types/dashboard";
 
-const categoryLabels = { china: "中国", us: "美国", international: "国际", finance: "财经", tech_ai: "科技 / AI" } as const;
+const categoryLabels = { markets: "市场", finance: "财经", investing: "投资", macro: "宏观", tech_ai: "科技 / AI" } as const;
 
 export function NewsList({ news }: { news: DashboardSnapshot["news"] }) {
   if (news.length === 0) {

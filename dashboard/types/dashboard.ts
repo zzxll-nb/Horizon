@@ -1,4 +1,4 @@
-export type CategoryId = "china" | "us" | "international" | "finance" | "tech_ai";
+export type CategoryId = "markets" | "finance" | "investing" | "macro" | "tech_ai";
 export type ImportanceLevel = "high" | "medium" | "low";
 
 export interface Importance {
@@ -43,7 +43,7 @@ export interface BriefingEvent {
 }
 
 export interface DashboardSnapshot {
-  schema_version: "1.0" | "1.1";
+  schema_version: "1.2";
   data_status: "live" | "sample";
   fixture_note?: string | null;
   generated_at: string;

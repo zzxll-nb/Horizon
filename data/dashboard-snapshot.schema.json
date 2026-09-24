@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://horizon.local/schemas/dashboard-snapshot-1.1.json",
+  "$id": "https://horizon.local/schemas/dashboard-snapshot-1.2.json",
   "title": "DashboardSnapshot",
   "description": "Horizon 与 AI 全球情报工作台之间的数据契约。所有时间均为 UTC ISO 8601。",
   "type": "object",
@@ -17,7 +17,7 @@
     "market"
   ],
   "properties": {
-    "schema_version": {"const": "1.1"},
+    "schema_version": {"const": "1.2"},
     "data_status": {"type": "string", "enum": ["live", "sample"]},
     "fixture_note": {"type": ["string", "null"]},
     "generated_at": {"type": "string", "format": "date-time"},
@@ -42,14 +42,14 @@
   "$defs": {
     "category_id": {
       "type": "string",
-      "enum": ["china", "us", "international", "finance", "tech_ai"]
+      "enum": ["markets", "finance", "investing", "macro", "tech_ai"]
     },
     "category": {
       "oneOf": [
-        {"type": "object", "additionalProperties": false, "required": ["id", "display_name"], "properties": {"id": {"const": "china"}, "display_name": {"const": "中国"}}},
-        {"type": "object", "additionalProperties": false, "required": ["id", "display_name"], "properties": {"id": {"const": "us"}, "display_name": {"const": "美国"}}},
-        {"type": "object", "additionalProperties": false, "required": ["id", "display_name"], "properties": {"id": {"const": "international"}, "display_name": {"const": "国际"}}},
+        {"type": "object", "additionalProperties": false, "required": ["id", "display_name"], "properties": {"id": {"const": "markets"}, "display_name": {"const": "市场"}}},
         {"type": "object", "additionalProperties": false, "required": ["id", "display_name"], "properties": {"id": {"const": "finance"}, "display_name": {"const": "财经"}}},
+        {"type": "object", "additionalProperties": false, "required": ["id", "display_name"], "properties": {"id": {"const": "investing"}, "display_name": {"const": "投资"}}},
+        {"type": "object", "additionalProperties": false, "required": ["id", "display_name"], "properties": {"id": {"const": "macro"}, "display_name": {"const": "宏观"}}},
         {"type": "object", "additionalProperties": false, "required": ["id", "display_name"], "properties": {"id": {"const": "tech_ai"}, "display_name": {"const": "科技 / AI"}}}
       ]
     },

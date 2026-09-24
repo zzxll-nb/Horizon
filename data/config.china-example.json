@@ -2,12 +2,12 @@
   "ai": {"provider":"openai","model":"gpt-4.1-mini","screening_model":"gpt-4.1-mini","api_key_env":"OPENAI_API_KEY","temperature":0.2,"max_tokens":8192,"throttle_sec":0,"analysis_concurrency":3,"enrichment_concurrency":3,"languages":["zh"],"review":{"enabled":true,"model":"gpt-5.6-terra","reasoning_effort":"medium","mini_reject_threshold":5.5,"high_priority_threshold":7.5,"selection_threshold":7.0,"max_items":6,"batch_size":8},"deep_analysis":{"enabled":true,"terra_model":"gpt-5.6-terra","sol_model":"gpt-5.6-sol","terra_reasoning_effort":"medium","sol_reasoning_effort":"medium","sol_high_reasoning_effort":"high","sol_high_reasoning_for_critical":true,"minimum_score":7.0,"sol_threshold":8.5,"sol_max_items":1,"sol_extreme_max_items":2,"max_items_per_run":6}},
   "processing": {
     "profiles_dir":"profiles",
-    "default_profile":"china-news",
+    "default_profile":"markets-news",
     "profile_settings": {
-      "china-news":{"threshold":7.0,"topic_dedup":true},
-      "us-news":{"threshold":7.0,"topic_dedup":true},
-      "international-news":{"threshold":7.0,"topic_dedup":true},
+      "markets-news":{"threshold":7.0,"topic_dedup":true},
       "finance-news":{"threshold":7.0,"topic_dedup":true},
+      "investing-news":{"threshold":7.0,"topic_dedup":true},
+      "macro-news":{"threshold":7.0,"topic_dedup":true},
       "tech-ai-news":{"threshold":7.0,"topic_dedup":true}
     }
   },
@@ -20,18 +20,17 @@
     "twitter":{"enabled":false},
     "ossinsight":{"enabled":false},
     "rss":[
-      {"name":"中国政府网","url":"https://www.gov.cn/pushinfo/v150203/pushinfo.xml","enabled":true,"category":"china","profile":"china-news","content_extractor":"trafilatura"},
-      {"name":"纽约时报美国","url":"https://rss.nytimes.com/services/xml/rss/nyt/US.xml","enabled":true,"category":"us","profile":"us-news","content_extractor":"trafilatura"},
-      {"name":"纽约时报国际","url":"https://rss.nytimes.com/services/xml/rss/nyt/World.xml","enabled":true,"category":"international","profile":"international-news","content_extractor":"trafilatura"},
-      {"name":"CNBC Finance","url":"https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10000664","enabled":true,"category":"finance","profile":"finance-news","content_extractor":"trafilatura"},
-      {"name":"OpenAI Blog","url":"https://openai.com/blog/rss.xml","enabled":true,"category":"tech-ai","profile":"tech-ai-news","content_extractor":"trafilatura"}
+      {"name":"Federal Reserve Press Releases","url":"https://www.federalreserve.gov/feeds/press_all.xml","enabled":true,"category":"macro","profile":"macro-news","content_extractor":"trafilatura"},
+      {"name":"CNBC Finance","url":"https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10000664","enabled":true,"category":"markets","profile":"markets-news","content_extractor":"trafilatura"},
+      {"name":"New York Times Business","url":"https://rss.nytimes.com/services/xml/rss/nyt/Business.xml","enabled":true,"category":"finance","profile":"finance-news","content_extractor":"trafilatura"},
+      {"name":"OpenAI Blog","url":"https://openai.com/blog/rss.xml","enabled":true,"category":"tech_ai","profile":"tech-ai-news","content_extractor":"trafilatura"}
     ],
-    "gdelt":{"enabled":true,"query":"China OR United States OR international relations OR global economy OR artificial intelligence","mode":"ArtList","max_records":30,"timespan":"24h","language":null,"country":null,"category":"global-news","profile":"auto"},
-    "google_news":{"enabled":true,"query":"中国 政策 OR 美国 政治 OR 国际 冲突 OR 全球 市场 OR 人工智能","language":"zh-CN","country":"CN","ceid":"CN:zh-Hans","max_results":30,"category":"global-news","profile":"auto"},
-    "openbb":{"enabled":true,"fetch_filings":false,"filings_provider":"sec","watchlists":[{"name":"macro-tech","enabled":true,"provider":"yfinance","fetch_limit":12,"category":"finance","symbols":["SPY","QQQ","TLT","GLD","USO","BABA","TSM","NVDA"],"profile":"finance-news"}]}
+    "gdelt":{"enabled":true,"query":"\"financial markets\" OR stocks OR bonds OR \"Federal Reserve\" OR inflation OR employment OR earnings OR \"mergers and acquisitions\" OR IPO OR commodities OR oil OR gold OR \"Treasury yields\" OR dollar OR Bitcoin OR artificial intelligence OR semiconductors OR \"AI capital spending\" OR \"data centers\" OR \"power demand\"","mode":"ArtList","max_records":30,"timespan":"24h","language":"english","country":null,"category":"markets","profile":["markets-news","finance-news","investing-news","macro-news","tech-ai-news"]},
+    "google_news":{"enabled":true,"query":"financial markets OR stocks OR bonds OR Federal Reserve OR inflation OR earnings OR M&A OR IPO OR oil OR gold OR Treasury yields OR Bitcoin OR artificial intelligence OR semiconductors OR AI data centers","language":"en-US","country":"US","ceid":"US:en","max_results":30,"category":"markets","profile":["markets-news","finance-news","investing-news","macro-news","tech-ai-news"]},
+    "openbb":{"enabled":true,"fetch_filings":false,"filings_provider":"sec","watchlists":[{"name":"markets-investing-ai","enabled":true,"provider":"yfinance","fetch_limit":12,"category":"investing","symbols":["SPY","QQQ","TLT","GLD","USO","BTC-USD","NVDA","TSM"],"profile":"investing-news"}]}
   },
   "collection":{"time_window_hours":24},
-  "digest":{"max_items":6,"profile_order":["china-news","us-news","international-news","finance-news","tech-ai-news"],"category_groups":{},"default_group":"other","default_group_limit":null},
+  "digest":{"max_items":6,"profile_order":["markets-news","finance-news","investing-news","macro-news","tech-ai-news"],"category_groups":{},"default_group":"other","default_group_limit":null},
   "webhook":{"enabled":false,"url_env":"HORIZON_WEBHOOK_URL","delivery":"summary","overview_position":"first","platform":"generic","layout":"markdown","fallback_layout":"markdown","languages":["zh"],"headers":""},
   "wechat":{"enabled":false,"languages":["zh"],"chunk_size":4000}
 }

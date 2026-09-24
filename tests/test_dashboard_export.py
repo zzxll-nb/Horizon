@@ -19,10 +19,10 @@ from src.storage.manager import StorageManager
 
 NOW = datetime(2026, 1, 15, 8, 30, tzinfo=timezone.utc)
 PROFILES = (
-    "china-news",
-    "us-news",
-    "international-news",
+    "markets-news",
     "finance-news",
+    "investing-news",
+    "macro-news",
     "tech-ai-news",
 )
 
@@ -114,10 +114,10 @@ def test_snapshot_matches_json_schema_and_contract() -> None:
 
     assert snapshot["data_status"] == "live"
     assert {item["category"] for item in snapshot["news"]} == {
-        "china",
-        "us",
-        "international",
+        "markets",
         "finance",
+        "investing",
+        "macro",
         "tech_ai",
     }
     assert [item["importance"] for item in snapshot["news"]] == [
@@ -188,7 +188,10 @@ def test_example_contains_three_distinct_long_research_analyses() -> None:
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(example)
 
     by_category = {item["category"]: item for item in example["news"]}
-    samples = [by_category[key]["analysis"] for key in ("finance", "us", "tech_ai")]
+    samples = [
+        by_category[key]["analysis"]
+        for key in ("finance", "macro", "tech_ai")
+    ]
     assert len(set(samples)) == 3
     for analysis in samples:
         chinese_chars = sum("\u3400" <= char <= "\u9fff" for char in analysis)
