@@ -50,10 +50,16 @@ Return concise JSON only. Do not write the long-form analysis at this stage:
 class ReviewBatchResult:
     reviewed_ids: list[str] = field(default_factory=list)
     failures: dict[str, str] = field(default_factory=dict)
+    batch_fallback_count: int = 0
+    single_item_fallback_count: int = 0
 
     @property
     def reviewed_count(self) -> int:
         return len(self.reviewed_ids)
+
+    @property
+    def final_review_failure_count(self) -> int:
+        return len(self.failures)
 
 
 class ContentReviewer:
@@ -67,40 +73,100 @@ class ContentReviewer:
         result = ReviewBatchResult()
         for start in range(0, len(items), self.batch_size):
             batch = items[start : start + self.batch_size]
-            try:
-                reviews = await self._review_chunk(batch)
-            except Exception as exc:
-                message = f"{type(exc).__name__}: {exc}"
-                logger.error("Terra review failed for batch: %s", message)
-                result.failures.update({item.id: message for item in batch})
-                continue
-
-            for item in batch:
-                review = reviews.get(item.id)
-                if review is None:
-                    result.failures[item.id] = "missing review result"
-                    continue
-                if item.processing is None:
-                    result.failures[item.id] = "missing processing result"
-                    continue
-                mini_score = (
-                    item.processing.analysis.score
-                    if item.processing.analysis is not None
-                    else None
-                )
-                review.mini_score = mini_score
-                item.processing.review = review
-                if item.processing.analysis is not None:
-                    item.processing.analysis.score = review.score
-                else:
-                    item.processing.analysis = ContentAnalysis(
-                        score=review.score,
-                        reason=review.reason,
-                        summary=item.title,
-                        relevance="uncertain",
-                    )
-                result.reviewed_ids.append(item.id)
+            await self._review_with_fallback(batch, result, fallback_depth=0)
         return result
+
+    async def _review_with_fallback(
+        self,
+        items: list[ContentItem],
+        result: ReviewBatchResult,
+        *,
+        fallback_depth: int,
+    ) -> None:
+        """Review a chunk, recursively isolating malformed model responses."""
+        if fallback_depth > 0 and len(items) == 1:
+            result.single_item_fallback_count += 1
+        try:
+            reviews = await self._review_chunk(items)
+        except Exception as exc:
+            message = f"{type(exc).__name__}: {exc}"
+            item_ids = [item.id for item in items]
+            if len(items) == 1:
+                item_id = items[0].id
+                failure_stage = (
+                    "after single-item fallback"
+                    if fallback_depth > 0
+                    else "in single-item batch"
+                )
+                logger.error(
+                    "Terra review final failure for id=%r %s: %s",
+                    item_id,
+                    failure_stage,
+                    message,
+                )
+                result.failures[item_id] = message
+                return
+
+            midpoint = (len(items) + 1) // 2
+            left = items[:midpoint]
+            right = items[midpoint:]
+            result.batch_fallback_count += 1
+            logger.warning(
+                "Terra review batch fallback for ids=%s after %s; splitting %d+%d",
+                item_ids,
+                message,
+                len(left),
+                len(right),
+            )
+            await self._review_with_fallback(
+                left,
+                result,
+                fallback_depth=fallback_depth + 1,
+            )
+            await self._review_with_fallback(
+                right,
+                result,
+                fallback_depth=fallback_depth + 1,
+            )
+            return
+
+        self._apply_reviews(items, reviews, result)
+
+    @staticmethod
+    def _apply_reviews(
+        items: list[ContentItem],
+        reviews: dict[str, ValueReview],
+        result: ReviewBatchResult,
+    ) -> None:
+        for item in items:
+            review = reviews.get(item.id)
+            if review is None:
+                message = "missing review result after validated response"
+                logger.error("Terra review missing id=%r: %s", item.id, message)
+                result.failures[item.id] = message
+                continue
+            if item.processing is None:
+                message = "missing processing result"
+                logger.error("Terra review cannot apply id=%r: %s", item.id, message)
+                result.failures[item.id] = message
+                continue
+            mini_score = (
+                item.processing.analysis.score
+                if item.processing.analysis is not None
+                else None
+            )
+            review.mini_score = mini_score
+            item.processing.review = review
+            if item.processing.analysis is not None:
+                item.processing.analysis.score = review.score
+            else:
+                item.processing.analysis = ContentAnalysis(
+                    score=review.score,
+                    reason=review.reason,
+                    summary=item.title,
+                    relevance="uncertain",
+                )
+            result.reviewed_ids.append(item.id)
 
     async def _review_chunk(
         self, items: list[ContentItem]
@@ -110,6 +176,12 @@ class ContentReviewer:
         reviews, failure = self._parse_reviews(response, items)
         if reviews is not None:
             return reviews
+
+        logger.warning(
+            "Terra review validation failed for ids=%s: %s; attempting repair",
+            [item.id for item in items],
+            failure,
+        )
 
         repair = await self.client.complete(
             REVIEW_SYSTEM,
@@ -161,8 +233,10 @@ class ContentReviewer:
             if not isinstance(raw, dict) or not isinstance(raw.get("id"), str):
                 return None, "each review requires an id"
             item_id = raw["id"]
-            if item_id not in expected_ids or item_id in reviews:
-                return None, f"unexpected or duplicate id {item_id!r}"
+            if item_id not in expected_ids:
+                return None, f"unexpected id {item_id!r}"
+            if item_id in reviews:
+                return None, f"duplicate id {item_id!r}"
             try:
                 reviews[item_id] = ValueReview.model_validate(
                     {key: value for key, value in raw.items() if key != "id"}
@@ -170,5 +244,6 @@ class ContentReviewer:
             except ValidationError as exc:
                 return None, f"invalid review for {item_id}: {exc.errors()[0]['type']}"
         if set(reviews) != expected_ids:
-            return None, "one or more candidate ids are missing"
+            missing_ids = sorted(expected_ids - set(reviews))
+            return None, f"missing ids {missing_ids!r}"
         return reviews, ""

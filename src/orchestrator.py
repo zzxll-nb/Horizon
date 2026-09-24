@@ -1088,7 +1088,10 @@ class HorizonOrchestrator:
         result = await reviewer.review_batch(items)
         self.console.print(
             f"{self.icons['ai']} Terra review: reviewed={result.reviewed_count}, "
-            f"failed={len(result.failures)}"
+            f"failed={result.final_review_failure_count}, "
+            f"batch_fallback={result.batch_fallback_count}, "
+            f"single_item_fallback={result.single_item_fallback_count}, "
+            f"final_review_failures={result.final_review_failure_count}"
         )
         return result
 
