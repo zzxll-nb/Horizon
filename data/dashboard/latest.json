@@ -1,15 +1,251 @@
 {
   "schema_version": "1.0",
   "data_status": "live",
-  "generated_at": "2026-09-24T08:54:18.212409Z",
-  "period_start": "2026-09-24T07:48:54.213390Z",
-  "period_end": "2026-09-24T08:54:18.212409Z",
+  "generated_at": "2026-09-24T09:22:40.375617Z",
+  "period_start": "2026-09-24T08:21:49.791602Z",
+  "period_end": "2026-09-24T09:22:40.375617Z",
   "briefing": {
     "title": "今日 AI Briefing",
-    "summary": "本期共抓取 20 条信息，筛选出 0 条重要事件，覆盖暂无分类。",
-    "events": []
+    "summary": "本期共抓取 29 条信息，筛选出 6 条重要事件，覆盖中国、美国、国际。",
+    "events": [
+      {
+        "id": "rss:rss.nytimes.com_services_xml_rss_nyt_US.xml:cc10189bc60a22dc",
+        "title_cn": "海蒂·欧弗顿提名美国食品药品监督管理局引发关注",
+        "summary": "海蒂·欧弗顿被提名为美国食品药品监督管理局（FDA）负责人，她对堕胎药米非司酮持批评态度，称其“对女性有危险”，并曾在白宫任职期间推动减少儿童疫苗接种推荐。该提名正在参议院进行确认听证，可能影响美国公共卫生政策和监管实践。",
+        "why_important": "欧弗顿的立场可能导致美国在堕胎药和疫苗监管政策上趋于严格，影响国内公共健康服务和国际医药监管标准。",
+        "category": "us",
+        "importance": {
+          "score": 70,
+          "level": "medium"
+        },
+        "source_count": 1,
+        "source_names": [
+          "纽约时报美国"
+        ],
+        "published_at": "2026-09-24T09:02:43Z"
+      },
+      {
+        "id": "rss:rss.nytimes.com_services_xml_rss_nyt_US.xml:53b378758b788bba",
+        "title_cn": "特朗普主办习近平峰会，盛大场面掩盖美中紧张关系",
+        "summary": "习近平主席十年来首次访问白宫，标志着美中关系中的重要外交事件。此次峰会在特朗普总统对华政策出现意外转变的背景下举行，尽管场面盛大，但双方紧张关系依然存在，未见实质性政策突破。",
+        "why_important": "此次峰会虽未带来实质政策改变，但在当前全球经济和地缘政治格局中，美中关系的任何高层互动都可能影响国际市场和多边外交动态。",
+        "category": "us",
+        "importance": {
+          "score": 70,
+          "level": "medium"
+        },
+        "source_count": 1,
+        "source_names": [
+          "纽约时报美国"
+        ],
+        "published_at": "2026-09-24T09:00:25Z"
+      },
+      {
+        "id": "rss:rss.nytimes.com_services_xml_rss_nyt_US.xml:4eb59f87640c4aa5",
+        "title_cn": "美中同意将贸易休战延长两个月",
+        "summary": "美国财政部长宣布，美中双方同意将贸易休战期限延长两个月，暂停征收关税的状态将持续至明年一月。这一决定标志着两国在贸易紧张局势上的暂时缓和。",
+        "why_important": "此举有助于稳定全球贸易环境，缓解两大经济体间的贸易紧张，促进国际市场的信心和经济合作。",
+        "category": "us",
+        "importance": {
+          "score": 70,
+          "level": "medium"
+        },
+        "source_count": 1,
+        "source_names": [
+          "纽约时报美国"
+        ],
+        "published_at": "2026-09-24T08:25:36Z"
+      },
+      {
+        "id": "rss:rss.nytimes.com_services_xml_rss_nyt_World.xml:bcf6ab1f366f5ae5",
+        "title_cn": "欧洲警惕俄罗斯混合攻击，但应对仍面临挑战",
+        "summary": "欧洲各国警告俄罗斯正在实施混合攻击，涉及多种非传统安全威胁，旨在影响欧洲安全环境。尽管欧洲对此高度关注，但在有效应对和防范这些攻击方面仍存在困难，尚未形成统一且有力的反制措施。各方均在观察事态发展，尚无明确解决方案。",
+        "why_important": "俄罗斯的混合攻击加剧了欧洲的安全压力，影响地区稳定与国际关系，考验欧洲国家的安全合作与防御能力。",
+        "category": "international",
+        "importance": {
+          "score": 70,
+          "level": "medium"
+        },
+        "source_count": 1,
+        "source_names": [
+          "纽约时报国际"
+        ],
+        "published_at": "2026-09-24T09:02:17Z"
+      },
+      {
+        "id": "rss:rss.nytimes.com_services_xml_rss_nyt_World.xml:e57be5efa4a18c8e",
+        "title_cn": "巴西最高法院法官腐败丑闻影响总统选举格局",
+        "summary": "巴西最高法院法官亚历山大·德·莫赖斯卷入一宗腐败丑闻，该事件正在重塑巴西总统选举的格局。此丑闻引发广泛关注，可能对巴西政治环境及选举结果产生重大影响。",
+        "why_important": "该腐败丑闻不仅影响巴西国内政治稳定，也可能改变国际社会对巴西司法独立性和民主进程的看法，进而影响该国的国际关系。",
+        "category": "international",
+        "importance": {
+          "score": 70,
+          "level": "medium"
+        },
+        "source_count": 1,
+        "source_names": [
+          "纽约时报国际"
+        ],
+        "published_at": "2026-09-24T09:01:19Z"
+      },
+      {
+        "id": "google_news:article:d07c68fb5066299c",
+        "title_cn": "习近平出席金砖国家领导人第十八次会晤第二阶段会议并发表重要讲话",
+        "summary": "2026年9月24日，中国国家主席习近平出席了金砖国家领导人第十八次会晤的第二阶段会议，并发表了重要讲话。此次会议汇聚了金砖五国领导人，旨在加强国际合作与多边关系，推动全球治理体系的完善。",
+        "why_important": "习近平主席的讲话体现了中国在推动金砖国家合作及全球多边治理中的积极角色，可能促进成员国间的经济与外交合作，增强金砖机制的国际影响力。",
+        "category": "china",
+        "importance": {
+          "score": 70,
+          "level": "medium"
+        },
+        "source_count": 1,
+        "source_names": [
+          "cpifa.org"
+        ],
+        "published_at": "2026-09-24T08:08:59Z"
+      }
+    ]
   },
-  "news": [],
+  "news": [
+    {
+      "id": "rss:rss.nytimes.com_services_xml_rss_nyt_US.xml:cc10189bc60a22dc",
+      "title_cn": "海蒂·欧弗顿提名美国食品药品监督管理局引发关注",
+      "title_original": "Abortion Pills, Vaccines and Food Safety: F.D.A. Nominee Heidi Overton Faces Senate Confirmation Hearing",
+      "summary": "海蒂·欧弗顿被提名为美国食品药品监督管理局（FDA）负责人，她对堕胎药米非司酮持批评态度，称其“对女性有危险”，并曾在白宫任职期间推动减少儿童疫苗接种推荐。该提名正在参议院进行确认听证，可能影响美国公共卫生政策和监管实践。",
+      "why_important": "欧弗顿的立场可能导致美国在堕胎药和疫苗监管政策上趋于严格，影响国内公共健康服务和国际医药监管标准。",
+      "category": "us",
+      "importance": {
+        "score": 70,
+        "level": "medium"
+      },
+      "published_at": "2026-09-24T09:02:43Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "纽约时报美国",
+          "url": "https://www.nytimes.com/2026/09/24/us/heidi-overton-fda.html",
+          "published_at": "2026-09-24T09:02:43Z"
+        }
+      ],
+      "primary_source": "纽约时报美国",
+      "primary_url": "https://www.nytimes.com/2026/09/24/us/heidi-overton-fda.html"
+    },
+    {
+      "id": "rss:rss.nytimes.com_services_xml_rss_nyt_US.xml:53b378758b788bba",
+      "title_cn": "特朗普主办习近平峰会，盛大场面掩盖美中紧张关系",
+      "title_original": "As Trump Hosts Xi at Summit, Pomp May Paper Over U.S.-China Tensions",
+      "summary": "习近平主席十年来首次访问白宫，标志着美中关系中的重要外交事件。此次峰会在特朗普总统对华政策出现意外转变的背景下举行，尽管场面盛大，但双方紧张关系依然存在，未见实质性政策突破。",
+      "why_important": "此次峰会虽未带来实质政策改变，但在当前全球经济和地缘政治格局中，美中关系的任何高层互动都可能影响国际市场和多边外交动态。",
+      "category": "us",
+      "importance": {
+        "score": 70,
+        "level": "medium"
+      },
+      "published_at": "2026-09-24T09:00:25Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "纽约时报美国",
+          "url": "https://www.nytimes.com/2026/09/24/us/politics/trump-xi-summit-china.html",
+          "published_at": "2026-09-24T09:00:25Z"
+        }
+      ],
+      "primary_source": "纽约时报美国",
+      "primary_url": "https://www.nytimes.com/2026/09/24/us/politics/trump-xi-summit-china.html"
+    },
+    {
+      "id": "rss:rss.nytimes.com_services_xml_rss_nyt_US.xml:4eb59f87640c4aa5",
+      "title_cn": "美中同意将贸易休战延长两个月",
+      "title_original": "U.S. and China Agree to Extend Trade Truce by 2 Months, Bessent Says",
+      "summary": "美国财政部长宣布，美中双方同意将贸易休战期限延长两个月，暂停征收关税的状态将持续至明年一月。这一决定标志着两国在贸易紧张局势上的暂时缓和。",
+      "why_important": "此举有助于稳定全球贸易环境，缓解两大经济体间的贸易紧张，促进国际市场的信心和经济合作。",
+      "category": "us",
+      "importance": {
+        "score": 70,
+        "level": "medium"
+      },
+      "published_at": "2026-09-24T08:25:36Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "纽约时报美国",
+          "url": "https://www.nytimes.com/2026/09/23/us/politics/china-trade-truce-tariffs.html",
+          "published_at": "2026-09-24T08:25:36Z"
+        }
+      ],
+      "primary_source": "纽约时报美国",
+      "primary_url": "https://www.nytimes.com/2026/09/23/us/politics/china-trade-truce-tariffs.html"
+    },
+    {
+      "id": "rss:rss.nytimes.com_services_xml_rss_nyt_World.xml:bcf6ab1f366f5ae5",
+      "title_cn": "欧洲警惕俄罗斯混合攻击，但应对仍面临挑战",
+      "title_original": "Europe warns of Russia’s hybrid attacks but struggles to counter them",
+      "summary": "欧洲各国警告俄罗斯正在实施混合攻击，涉及多种非传统安全威胁，旨在影响欧洲安全环境。尽管欧洲对此高度关注，但在有效应对和防范这些攻击方面仍存在困难，尚未形成统一且有力的反制措施。各方均在观察事态发展，尚无明确解决方案。",
+      "why_important": "俄罗斯的混合攻击加剧了欧洲的安全压力，影响地区稳定与国际关系，考验欧洲国家的安全合作与防御能力。",
+      "category": "international",
+      "importance": {
+        "score": 70,
+        "level": "medium"
+      },
+      "published_at": "2026-09-24T09:02:17Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "纽约时报国际",
+          "url": "https://www.nytimes.com/2026/09/24/world/europe/russia-europe-warning-ukraine-war.html",
+          "published_at": "2026-09-24T09:02:17Z"
+        }
+      ],
+      "primary_source": "纽约时报国际",
+      "primary_url": "https://www.nytimes.com/2026/09/24/world/europe/russia-europe-warning-ukraine-war.html"
+    },
+    {
+      "id": "rss:rss.nytimes.com_services_xml_rss_nyt_World.xml:e57be5efa4a18c8e",
+      "title_cn": "巴西最高法院法官腐败丑闻影响总统选举格局",
+      "title_original": "A Corruption Scandal Is Reshaping Brazil’s Presidential Election",
+      "summary": "巴西最高法院法官亚历山大·德·莫赖斯卷入一宗腐败丑闻，该事件正在重塑巴西总统选举的格局。此丑闻引发广泛关注，可能对巴西政治环境及选举结果产生重大影响。",
+      "why_important": "该腐败丑闻不仅影响巴西国内政治稳定，也可能改变国际社会对巴西司法独立性和民主进程的看法，进而影响该国的国际关系。",
+      "category": "international",
+      "importance": {
+        "score": 70,
+        "level": "medium"
+      },
+      "published_at": "2026-09-24T09:01:19Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "纽约时报国际",
+          "url": "https://www.nytimes.com/2026/09/24/world/americas/brazil-supreme-court-justice-moraes-vorcaro-trump.html",
+          "published_at": "2026-09-24T09:01:19Z"
+        }
+      ],
+      "primary_source": "纽约时报国际",
+      "primary_url": "https://www.nytimes.com/2026/09/24/world/americas/brazil-supreme-court-justice-moraes-vorcaro-trump.html"
+    },
+    {
+      "id": "google_news:article:d07c68fb5066299c",
+      "title_cn": "习近平出席金砖国家领导人第十八次会晤第二阶段会议并发表重要讲话",
+      "title_original": "习近平出席金砖国家领导人第十八次会晤第二阶段会议并发表重要讲话 - cpifa.org",
+      "summary": "2026年9月24日，中国国家主席习近平出席了金砖国家领导人第十八次会晤的第二阶段会议，并发表了重要讲话。此次会议汇聚了金砖五国领导人，旨在加强国际合作与多边关系，推动全球治理体系的完善。",
+      "why_important": "习近平主席的讲话体现了中国在推动金砖国家合作及全球多边治理中的积极角色，可能促进成员国间的经济与外交合作，增强金砖机制的国际影响力。",
+      "category": "china",
+      "importance": {
+        "score": 70,
+        "level": "medium"
+      },
+      "published_at": "2026-09-24T08:08:59Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "cpifa.org",
+          "url": "https://news.google.com/rss/articles/CBMiSkFVX3lxTE5WcS1vNDdRZVg3eVdWNWpXWXNwTVhtZ0ZoZVpSakFqcGpjQkZRbnVsS2hlOVdsWmVhVVMxMkpyc1BnT25odG5XcjdB?oc=5",
+          "published_at": "2026-09-24T08:08:59Z"
+        }
+      ],
+      "primary_source": "cpifa.org",
+      "primary_url": "https://news.google.com/rss/articles/CBMiSkFVX3lxTE5WcS1vNDdRZVg3eVdWNWpXWXNwTVhtZ0ZoZVpSakFqcGpjQkZRbnVsS2hlOVdsWmVhVVMxMkpyc1BnT25odG5XcjdB?oc=5"
+    }
+  ],
   "categories": [
     {
       "id": "china",
