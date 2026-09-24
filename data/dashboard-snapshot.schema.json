@@ -115,6 +115,7 @@
           "uniqueItems": true,
           "items": {"type": "string", "minLength": 1}
         },
+        "content_kind": {"type": "string", "enum": ["news", "background_research"]},
         "category": {"$ref": "#/$defs/category_id"},
         "importance": {"$ref": "#/$defs/importance"},
         "published_at": {"type": "string", "format": "date-time"},
@@ -137,6 +138,7 @@
         "title_cn": {"type": "string", "minLength": 1},
         "summary": {"type": "string", "minLength": 1},
         "why_important": {"type": ["string", "null"]},
+        "content_kind": {"type": "string", "enum": ["news", "background_research"]},
         "category": {"$ref": "#/$defs/category_id"},
         "importance": {"$ref": "#/$defs/importance"},
         "source_count": {"type": "integer", "minimum": 1},

@@ -135,7 +135,11 @@ def _sources(item: ContentItem) -> list[dict[str, str | None]]:
     return sources
 
 
-def _news_event(item: ContentItem) -> dict[str, Any] | None:
+def _news_event(
+    item: ContentItem,
+    *,
+    freshness_cutoff: datetime,
+) -> dict[str, Any] | None:
     processing = item.processing
     if processing is None or processing.analysis is None:
         logger.warning("Skipping dashboard item %s without analysis", item.id)
@@ -182,6 +186,17 @@ def _news_event(item: ContentItem) -> dict[str, Any] | None:
     sources = _sources(item)
     primary_source = sources[0]["name"]
     updated_at = item.metadata.get("updated_at", item.metadata.get("modified_at"))
+    item_published_at = item.published_at
+    if item_published_at.tzinfo is None:
+        item_published_at = item_published_at.replace(tzinfo=timezone.utc)
+    cutoff = freshness_cutoff
+    if cutoff.tzinfo is None:
+        cutoff = cutoff.replace(tzinfo=timezone.utc)
+    content_kind = (
+        "background_research"
+        if item_published_at.astimezone(timezone.utc) < cutoff.astimezone(timezone.utc)
+        else "news"
+    )
 
     return {
         "id": item.id,
@@ -194,6 +209,7 @@ def _news_event(item: ContentItem) -> dict[str, Any] | None:
         ),
         "watch_factors": _list_block(watch_factors_block),
         "related_assets": _list_block(related_assets_block),
+        "content_kind": content_kind,
         "category": category,
         "importance": _importance(score),
         "published_at": _utc_iso(item.published_at),
@@ -216,7 +232,7 @@ def build_dashboard_snapshot(
     generated_at = generated_at or datetime.now(timezone.utc)
     news = []
     for item in items:
-        event = _news_event(item)
+        event = _news_event(item, freshness_cutoff=period_start)
         if event is not None:
             news.append(event)
 
@@ -226,6 +242,7 @@ def build_dashboard_snapshot(
             "title_cn": event["title_cn"],
             "summary": event["summary"],
             "why_important": event["why_important"],
+            "content_kind": event["content_kind"],
             "category": event["category"],
             "importance": event["importance"],
             "source_count": len(event["sources"]),

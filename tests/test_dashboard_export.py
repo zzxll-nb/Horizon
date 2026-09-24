@@ -137,6 +137,7 @@ def test_snapshot_matches_json_schema_and_contract() -> None:
     assert snapshot["news"][0]["related_assets"] == [
         "示例指数：验证关联资产导出"
     ]
+    assert {item["content_kind"] for item in snapshot["news"]} == {"news"}
     assert {event["id"] for event in snapshot["briefing"]["events"]} <= {
         item["id"] for item in snapshot["news"]
     }
@@ -154,6 +155,19 @@ def test_unmapped_profile_is_skipped_without_failing(caplog) -> None:
     assert snapshot["news"] == []
     assert snapshot["briefing"]["events"] == []
     assert "unmapped profile" in caplog.text
+
+
+def test_export_marks_pre_window_item_as_background_research() -> None:
+    snapshot = build_dashboard_snapshot(
+        [_item("markets-news", 2, 8.5)],
+        period_start=NOW - timedelta(hours=1),
+        period_end=NOW,
+        generated_at=NOW,
+        total_fetched=1,
+    )
+
+    assert snapshot["news"][0]["content_kind"] == "background_research"
+    assert snapshot["briefing"]["events"][0]["content_kind"] == "background_research"
 
 
 def test_dashboard_skip_reason_reports_unmapped_profile() -> None:
@@ -186,6 +200,9 @@ def test_example_contains_three_distinct_long_research_analyses() -> None:
         )
     )
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(example)
+
+    assert example["news"][0]["content_kind"] == "background_research"
+    assert example["briefing"]["events"][0]["content_kind"] == "background_research"
 
     by_category = {item["category"]: item for item in example["news"]}
     samples = [

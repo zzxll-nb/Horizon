@@ -27,6 +27,9 @@ def test_production_config_uses_market_focused_profiles_and_sources() -> None:
     assert set(config.processing.profile_settings) == EXPECTED_PROFILES
     assert set(config.digest.profile_order) == EXPECTED_PROFILES
     assert config.processing.default_profile == "markets-news"
+    assert config.collection.freshness_gate_enabled is True
+    assert config.collection.max_background_items == 1
+    assert config.sources.gdelt.timespan is None
     assert set(config.sources.gdelt.profile or []) == EXPECTED_PROFILES
     assert set(config.sources.google_news.profile or []) == EXPECTED_PROFILES
 

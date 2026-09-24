@@ -1,7 +1,7 @@
 """Tests for cost-bounded final-item model routing."""
 
 import asyncio
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
 import pytest
@@ -13,6 +13,7 @@ from src.ai.reviewer import ContentReviewer
 from src.models import (
     AIConfig,
     ClassificationResult,
+    CollectionConfig,
     ContentAnalysis,
     ContentItem,
     DeepAnalysisConfig,
@@ -55,6 +56,7 @@ def make_orchestrator(digest: DigestConfig) -> HorizonOrchestrator:
             review=ReviewConfig(enabled=True),
         ),
         digest=digest,
+        collection=CollectionConfig(),
         processing=ProcessingConfig(
             profile_settings={
                 "finance-news": ProfileSettingsConfig(threshold=7.0)
@@ -257,3 +259,61 @@ def test_final_terra_selection_never_exceeds_six() -> None:
     selected = orchestrator.select_reviewed_items(items)
 
     assert len(selected) == 6
+
+
+def test_freshness_gate_prioritizes_new_items_and_limits_background() -> None:
+    orchestrator = make_orchestrator(DigestConfig())
+    orchestrator.config.collection = CollectionConfig(
+        freshness_gate_enabled=True,
+        max_background_items=1,
+        background_min_score=8.0,
+    )
+    now = datetime.now(timezone.utc)
+    fresh = make_item("fresh-market-news", 7.6, "markets")
+    fresh.published_at = now - timedelta(hours=1)
+    stale = make_item("stale-breaking-news", 9.8, "markets")
+    stale.published_at = now - timedelta(days=90)
+    background = make_item("annual-market-outlook", 9.2, "markets")
+    background.title = "Annual Market Outlook research report"
+    background.published_at = now - timedelta(days=90)
+    second_background = make_item("industry-report", 9.0, "markets")
+    second_background.title = "Semiconductor industry report"
+    second_background.published_at = now - timedelta(days=60)
+    for item in (fresh, stale, background, second_background):
+        item.processing.review = ValueReview(
+            mini_score=item.processing.analysis.score,
+            score=item.processing.analysis.score,
+            decision="select",
+            reason="material",
+        )
+
+    selected = orchestrator.select_reviewed_items(
+        [stale, background, second_background, fresh],
+        freshness_cutoff=now - timedelta(hours=9),
+    )
+
+    assert [item.id for item in selected] == [fresh.id, background.id]
+
+
+def test_freshness_gate_does_not_fill_quota_with_stale_news() -> None:
+    orchestrator = make_orchestrator(DigestConfig())
+    orchestrator.config.collection = CollectionConfig(
+        freshness_gate_enabled=True,
+        max_background_items=1,
+    )
+    now = datetime.now(timezone.utc)
+    stale = make_item("old-news", 9.9, "markets")
+    stale.published_at = now - timedelta(days=30)
+    stale.processing.review = ValueReview(
+        mini_score=9.9,
+        score=9.9,
+        decision="select",
+        reason="material but old",
+    )
+
+    selected = orchestrator.select_reviewed_items(
+        [stale],
+        freshness_cutoff=now - timedelta(hours=15),
+    )
+
+    assert selected == []

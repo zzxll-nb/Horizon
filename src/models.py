@@ -707,6 +707,33 @@ class CollectionConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     time_window_hours: int = 24
+    freshness_gate_enabled: bool = False
+    max_background_items: int = Field(default=0, ge=0, le=2)
+    background_min_score: float = Field(default=8.0, ge=0, le=10)
+    background_keywords: List[str] = Field(
+        default_factory=lambda: [
+            "research report",
+            "industry report",
+            "market outlook",
+            "annual outlook",
+            "white paper",
+            "long-term study",
+            "深度研究",
+            "研究报告",
+            "行业报告",
+            "市场展望",
+            "年度展望",
+            "白皮书",
+            "长期研究",
+        ]
+    )
+
+    @field_validator("background_keywords")
+    @classmethod
+    def validate_background_keywords(cls, value: List[str]) -> List[str]:
+        if any(not keyword.strip() for keyword in value):
+            raise ValueError("background_keywords entries must be non-empty")
+        return value
 
 
 class DigestConfig(BaseModel):

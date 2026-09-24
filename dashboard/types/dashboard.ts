@@ -21,6 +21,7 @@ export interface NewsEvent {
   why_important: string | null;
   watch_factors?: string[];
   related_assets?: string[];
+  content_kind?: "news" | "background_research";
   category: CategoryId;
   importance: Importance;
   published_at: string;
@@ -35,6 +36,7 @@ export interface BriefingEvent {
   title_cn: string;
   summary: string;
   why_important: string | null;
+  content_kind?: "news" | "background_research";
   category: CategoryId;
   importance: Importance;
   source_count: number;

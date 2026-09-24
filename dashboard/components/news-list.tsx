@@ -28,6 +28,7 @@ function NewsRow({ item }: { item: NewsEvent }) {
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="break-words text-[17px] font-semibold leading-7 tracking-tight text-zinc-950">{item.title_cn}</h3>
+          {item.content_kind === "background_research" && <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">背景研究</span>}
           <Importance level={item.importance.level} score={item.importance.score} />
         </div>
         <p className="mt-2 break-words text-[15px] leading-7 text-zinc-600">{item.summary}</p>

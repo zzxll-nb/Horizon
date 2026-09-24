@@ -323,7 +323,10 @@ class HorizonOrchestrator:
                         "Terra review produced no valid results; refusing to overwrite "
                         "the last valid dashboard snapshot"
                     )
-                important_items = self.select_reviewed_items(review_candidates)
+                important_items = self.select_reviewed_items(
+                    review_candidates,
+                    freshness_cutoff=since,
+                )
             else:
                 filtering_result = await self.select_digest_items(analyzed_items)
                 important_items = filtering_result.items
@@ -1089,8 +1092,21 @@ class HorizonOrchestrator:
         )
         return result
 
-    def select_reviewed_items(self, items: List[ContentItem]) -> List[ContentItem]:
-        """Select and rank only items approved by Terra, without filling quotas."""
+    def _is_background_research(self, item: ContentItem) -> bool:
+        """Identify explicitly research-oriented content without another AI call."""
+        title = item.title.casefold()
+        return any(
+            keyword.casefold() in title
+            for keyword in self.config.collection.background_keywords
+        )
+
+    def select_reviewed_items(
+        self,
+        items: List[ContentItem],
+        *,
+        freshness_cutoff: datetime | None = None,
+    ) -> List[ContentItem]:
+        """Select Terra-approved items, prioritizing the current update window."""
         threshold = self.config.ai.review.selection_threshold
         approved = [
             item
@@ -1104,8 +1120,60 @@ class HorizonOrchestrator:
             key=lambda item: item.processing.review.score,  # type: ignore[union-attr]
             reverse=True,
         )
-        balanced = self.apply_balanced_digest(approved)
-        selected = balanced.items[: self.config.ai.review.max_items]
+
+        collection = getattr(self.config, "collection", None)
+        if not (
+            freshness_cutoff is not None
+            and collection is not None
+            and collection.freshness_gate_enabled
+        ):
+            balanced = self.apply_balanced_digest(approved)
+            selected = balanced.items[: self.config.ai.review.max_items]
+            self.console.print(
+                f"{self.icons['filter']} Terra selection: approved={len(approved)}, "
+                f"selected={len(selected)}, rejected={len(items) - len(approved)}"
+            )
+            return selected
+
+        if freshness_cutoff.tzinfo is None:
+            freshness_cutoff = freshness_cutoff.replace(tzinfo=timezone.utc)
+        cutoff = freshness_cutoff.astimezone(timezone.utc)
+        fresh: List[ContentItem] = []
+        background: List[ContentItem] = []
+        stale_rejected = 0
+        for item in approved:
+            published_at = item.published_at
+            if published_at.tzinfo is None:
+                published_at = published_at.replace(tzinfo=timezone.utc)
+            if published_at.astimezone(timezone.utc) >= cutoff:
+                fresh.append(item)
+                continue
+            review_score = item.processing.review.score  # type: ignore[union-attr]
+            if (
+                review_score >= collection.background_min_score
+                and self._is_background_research(item)
+            ):
+                background.append(item)
+            else:
+                stale_rejected += 1
+
+        balanced = self.apply_balanced_digest(fresh)
+        digest_limit = self.config.digest.max_items
+        selection_limit = min(
+            self.config.ai.review.max_items,
+            digest_limit
+            if digest_limit is not None
+            else self.config.ai.review.max_items,
+        )
+        selected = balanced.items[:selection_limit]
+        remaining = selection_limit - len(selected)
+        background_limit = min(collection.max_background_items, remaining)
+        selected.extend(background[:background_limit])
+        self.console.print(
+            f"{self.icons['filter']} Freshness selection: fresh_approved={len(fresh)}, "
+            f"background_candidates={len(background)}, stale_rejected={stale_rejected}, "
+            f"selected={len(selected)}"
+        )
         self.console.print(
             f"{self.icons['filter']} Terra selection: approved={len(approved)}, "
             f"selected={len(selected)}, rejected={len(items) - len(approved)}"

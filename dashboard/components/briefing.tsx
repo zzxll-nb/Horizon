@@ -34,6 +34,7 @@ function BriefingRow({ event, index }: { event: BriefingEvent; index: number }) 
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="break-words text-base font-semibold leading-6 text-zinc-900">{event.title_cn}</h3>
+          {event.content_kind === "background_research" && <BackgroundBadge />}
           <Importance level={event.importance.level} score={event.importance.score} />
         </div>
         <p className="mt-1.5 break-words text-sm leading-6 text-zinc-600">{event.summary}</p>
@@ -45,6 +46,10 @@ function BriefingRow({ event, index }: { event: BriefingEvent; index: number }) 
       </div>
     </article>
   );
+}
+
+function BackgroundBadge() {
+  return <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">背景研究</span>;
 }
 
 export function Importance({ level, score }: { level: "high" | "medium" | "low"; score: number }) {

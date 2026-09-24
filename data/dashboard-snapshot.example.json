@@ -3,7 +3,7 @@
   "data_status": "sample",
   "fixture_note": "示例/fixture：以下事件、数字与分析仅用于验证 DashboardSnapshot 1.2 和界面，不代表实时新闻或投资建议。",
   "generated_at": "2026-01-15T08:30:00Z",
-  "period_start": "2026-01-14T08:30:00Z",
+  "period_start": "2026-01-15T02:00:00Z",
   "period_end": "2026-01-15T08:30:00Z",
   "briefing": {
     "title": "今日 AI Briefing（示例）",
@@ -14,6 +14,7 @@
         "title_cn": "【样例】全球制造业设备投资计划进入执行阶段",
         "summary": "样例企业投资计划显示先进制造与绿色设备更新需求增加，但订单转化、融资成本和项目回报仍需后续经营数据确认。",
         "why_important": "设备投资能否转化为新增订单，将影响制造业资本开支、工业品需求和相关企业利润预期。",
+        "content_kind": "background_research",
         "category": "investing",
         "importance": {
           "score": 92,
@@ -30,6 +31,7 @@
         "title_cn": "【样例】美国通胀降温但就业仍具韧性",
         "summary": "样例数据显示美国总体通胀继续回落，就业增长保持韧性，但服务价格、工资增速与历史数据修订仍令利率路径存在不确定性。",
         "why_important": "通胀和就业组合会直接改变美联储政策预期，并通过美债收益率、美元和权益估值影响全球市场。",
+        "content_kind": "news",
         "category": "macro",
         "importance": {
           "score": 88,
@@ -46,6 +48,7 @@
         "title_cn": "【样例】关键航线运价与保险风险溢价出现联动",
         "summary": "样例数据显示关键航线运价、保险费率和运输时间同步变化，市场仍需通过实际通行量验证供应链风险是否持续缓解。",
         "why_important": "航运安全会影响能源风险溢价、全球运输成本和商品通胀，并进一步传导至央行政策与企业利润。",
+        "content_kind": "news",
         "category": "markets",
         "importance": {
           "score": 84,
@@ -62,6 +65,7 @@
         "title_cn": "【样例】大型云厂商业绩增长并上调AI资本开支",
         "summary": "样例云厂商季度收入与云业务继续增长，并上调数据中心和AI基础设施资本开支计划；后续焦点转向算力利用率、折旧和自由现金流。",
         "why_important": "AI资本开支既可能推动云收入与供应链订单，也可能在需求兑现前抬高折旧、能源成本和现金流压力。",
+        "content_kind": "news",
         "category": "finance",
         "importance": {
           "score": 86,
@@ -78,6 +82,7 @@
         "title_cn": "【样例】新一代AI加速器公布量产计划",
         "summary": "样例芯片企业发布数据中心AI加速器，披露性能、功耗、量产窗口与合作伙伴；官方基准仍需独立测试和真实部署验证。",
         "why_important": "量产进度和客户采用将影响AI资本开支链、先进封装与HBM供需，也决定厂商收入和毛利率能否兑现。",
+        "content_kind": "news",
         "category": "tech_ai",
         "importance": {
           "score": 82,
@@ -110,6 +115,7 @@
         "电力设备行业：能效改造与配电需求",
         "制造业指数：资本开支预期"
       ],
+      "content_kind": "background_research",
       "category": "investing",
       "importance": {
         "score": 92,
@@ -147,6 +153,7 @@
         "美国国债：政策路径重新定价",
         "美元指数：利差与避险需求"
       ],
+      "content_kind": "news",
       "category": "macro",
       "importance": {
         "score": 88,
@@ -184,6 +191,7 @@
         "黄金：风险规避需求",
         "能源进口国货币：贸易条件变化"
       ],
+      "content_kind": "news",
       "category": "markets",
       "importance": {
         "score": 84,
@@ -221,6 +229,7 @@
         "数据中心基础设施：电力与冷却需求",
         "美国十年期国债：估值贴现率"
       ],
+      "content_kind": "news",
       "category": "finance",
       "importance": {
         "score": 86,
@@ -258,6 +267,7 @@
         "HBM存储：供需与价格",
         "数据中心网络和电力设备：配套投资"
       ],
+      "content_kind": "news",
       "category": "tech_ai",
       "importance": {
         "score": 82,
