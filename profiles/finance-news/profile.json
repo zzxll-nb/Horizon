@@ -25,6 +25,22 @@
         "type": "section",
         "tools": [],
         "optional": true
+      },
+      {
+        "id": "analysis",
+        "type": "section",
+        "tools": []
+      },
+      {
+        "id": "watch_factors",
+        "type": "section",
+        "tools": []
+      },
+      {
+        "id": "related_assets",
+        "type": "section",
+        "tools": [],
+        "optional": true
       }
     ]
   }

@@ -36,7 +36,22 @@ def _item(profile: str, index: int, score: float) -> ContentItem:
             title="摘要",
             content=f"这是第 {index} 条新闻的中文摘要。",
             primary=True,
-        )
+        ),
+        ContentBlock(
+            id="analysis",
+            title="深度分析",
+            content="研究" * 350,
+        ),
+        ContentBlock(
+            id="watch_factors",
+            title="后续观察指标",
+            content="- 下一次财报\n- 资本开支",
+        ),
+        ContentBlock(
+            id="related_assets",
+            title="关联资产",
+            content="- 示例指数：验证关联资产导出",
+        ),
     ]
     if index != 4:
         blocks.append(
@@ -117,6 +132,11 @@ def test_snapshot_matches_json_schema_and_contract() -> None:
     assert snapshot["news"][4]["title_original"] is None
     assert snapshot["news"][4]["why_important"] is None
     assert snapshot["news"][4]["updated_at"] is None
+    assert len(snapshot["news"][0]["analysis"]) == 700
+    assert snapshot["news"][0]["watch_factors"] == ["下一次财报", "资本开支"]
+    assert snapshot["news"][0]["related_assets"] == [
+        "示例指数：验证关联资产导出"
+    ]
     assert {event["id"] for event in snapshot["briefing"]["events"]} <= {
         item["id"] for item in snapshot["news"]
     }
@@ -151,3 +171,26 @@ def test_storage_saves_latest_and_dated_archive(tmp_path) -> None:
     assert json.loads(latest.read_text(encoding="utf-8")) == json.loads(
         archive.read_text(encoding="utf-8")
     )
+
+
+def test_example_contains_three_distinct_long_research_analyses() -> None:
+    root = Path(__file__).parents[1]
+    example = json.loads(
+        (root / "data" / "dashboard-snapshot.example.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    schema = json.loads(
+        (root / "data" / "dashboard-snapshot.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    Draft202012Validator(schema, format_checker=FormatChecker()).validate(example)
+
+    by_category = {item["category"]: item for item in example["news"]}
+    samples = [by_category[key]["analysis"] for key in ("finance", "us", "tech_ai")]
+    assert len(set(samples)) == 3
+    for analysis in samples:
+        chinese_chars = sum("\u3400" <= char <= "\u9fff" for char in analysis)
+        assert chinese_chars >= 700
+        assert len({part for part in analysis.split("。") if part.strip()}) >= 12

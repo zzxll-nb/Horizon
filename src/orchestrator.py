@@ -363,6 +363,11 @@ class HorizonOrchestrator:
                         f"      {self.icons['detail']} export skip reason "
                         f"{reason}: {count}"
                     )
+                if important_items and exported_count == 0:
+                    raise ValueError(
+                        "No selected item produced a valid 700-character "
+                        "Chinese deep analysis; keeping the previous snapshot"
+                    )
                 latest_path, archive_path = self.storage.save_dashboard_snapshot(
                     today, snapshot
                 )

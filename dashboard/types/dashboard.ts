@@ -17,7 +17,10 @@ export interface NewsEvent {
   title_cn: string;
   title_original: string | null;
   summary: string;
+  analysis?: string | null;
   why_important: string | null;
+  watch_factors?: string[];
+  related_assets?: string[];
   category: CategoryId;
   importance: Importance;
   published_at: string;
@@ -40,7 +43,7 @@ export interface BriefingEvent {
 }
 
 export interface DashboardSnapshot {
-  schema_version: "1.0";
+  schema_version: "1.0" | "1.1";
   data_status: "live" | "sample";
   fixture_note?: string | null;
   generated_at: string;

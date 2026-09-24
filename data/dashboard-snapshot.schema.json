@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://horizon.local/schemas/dashboard-snapshot-1.0.json",
+  "$id": "https://horizon.local/schemas/dashboard-snapshot-1.1.json",
   "title": "DashboardSnapshot",
   "description": "Horizon 与 AI 全球情报工作台之间的数据契约。所有时间均为 UTC ISO 8601。",
   "type": "object",
@@ -17,7 +17,7 @@
     "market"
   ],
   "properties": {
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"const": "1.1"},
     "data_status": {"type": "string", "enum": ["live", "sample"]},
     "fixture_note": {"type": ["string", "null"]},
     "generated_at": {"type": "string", "format": "date-time"},
@@ -84,7 +84,10 @@
         "title_cn",
         "title_original",
         "summary",
+        "analysis",
         "why_important",
+        "watch_factors",
+        "related_assets",
         "category",
         "importance",
         "published_at",
@@ -98,7 +101,20 @@
         "title_cn": {"type": "string", "minLength": 1},
         "title_original": {"type": ["string", "null"]},
         "summary": {"type": "string", "minLength": 1},
+        "analysis": {"type": "string", "minLength": 700},
         "why_important": {"type": ["string", "null"]},
+        "watch_factors": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 5,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "related_assets": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
         "category": {"$ref": "#/$defs/category_id"},
         "importance": {"$ref": "#/$defs/importance"},
         "published_at": {"type": "string", "format": "date-time"},

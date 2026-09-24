@@ -1,50 +1,302 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "data_status": "sample",
-  "fixture_note": "这是用于开发和测试的虚构样例，不代表实时新闻或真实市场信息。",
+  "fixture_note": "示例/fixture：以下事件、数字与分析仅用于验证 DashboardSnapshot 1.1 和界面，不代表实时新闻或投资建议。",
   "generated_at": "2026-01-15T08:30:00Z",
   "period_start": "2026-01-14T08:30:00Z",
   "period_end": "2026-01-15T08:30:00Z",
   "briefing": {
-    "title": "【样例数据】今日 AI Briefing",
-    "summary": "本期样例覆盖中国政策、美国经济、国际协调、全球市场及人工智能治理，用于验证工作台数据展示。",
+    "title": "今日 AI Briefing（示例）",
+    "summary": "本期示例覆盖中国政策、美国宏观、国际航运、公司财报和AI半导体，用于验证研究型深度分析展示。",
     "events": [
-      {"id":"rss:sample-china:policy-001","title_cn":"【样例】中国发布新一轮产业支持安排","summary":"样例政策提出扩大先进制造与绿色产业支持范围，并明确后续实施时间表。","why_important":"政策可能影响重点行业投资节奏，也是观察宏观政策取向的重要信号。","category":"china","importance":{"score":92,"level":"high"},"source_count":2,"source_names":["示例中国来源A","示例中国来源B"],"published_at":"2026-01-15T01:10:00Z"},
-      {"id":"rss:sample-us:economy-001","title_cn":"【样例】美国公布最新通胀与就业指标","summary":"样例数据显示通胀继续放缓，就业市场保持韧性，市场重新评估未来政策路径。","why_important":"两项指标会直接影响利率预期，并通过美元与全球资产价格产生外溢影响。","category":"us","importance":{"score":88,"level":"high"},"source_count":2,"source_names":["示例美国来源A","示例财经来源A"],"published_at":"2026-01-15T02:20:00Z"},
-      {"id":"gdelt:sample:diplomacy-001","title_cn":"【样例】多国就区域安全建立新磋商机制","summary":"参与方同意建立定期沟通机制，以降低误判风险并协调后续外交议程。","why_important":"持续沟通有助于降低局势升级概率，并可能影响跨境贸易和能源运输预期。","category":"international","importance":{"score":84,"level":"high"},"source_count":1,"source_names":["示例国际来源A"],"published_at":"2026-01-15T03:00:00Z"},
-      {"id":"openbb:sample:macro-001","title_cn":"【样例】全球主要市场调整利率预期","summary":"样例市场数据显示债券收益率与主要股指出现调整，投资者关注央行最新表态。","why_important":"利率预期变化会影响企业融资成本、汇率和风险资产估值。","category":"finance","importance":{"score":81,"level":"high"},"source_count":1,"source_names":["示例财经来源A"],"published_at":"2026-01-15T04:15:00Z"},
-      {"id":"rss:sample-ai:model-001","title_cn":"【样例】研究机构发布高效多模态模型","summary":"样例模型以更低推理成本处理文本与图像任务，并公布了评测方法和技术报告。","why_important":"成本下降可能扩大多模态应用范围，但真实效果仍需独立评测验证。","category":"tech_ai","importance":{"score":79,"level":"medium"},"source_count":1,"source_names":["示例科技来源A"],"published_at":"2026-01-15T05:40:00Z"}
+      {
+        "id": "rss:sample-china:policy-001",
+        "title_cn": "【样例】先进制造设备更新政策进入实施阶段",
+        "summary": "样例政策明确先进制造与绿色设备更新的支持方向、申报窗口和分阶段执行安排，实际财政规模与地方配套仍待后续细则确认。",
+        "why_important": "政策能否转化为新增订单，将影响制造业资本开支、工业品需求和相关企业利润预期。",
+        "category": "china",
+        "importance": {
+          "score": 92,
+          "level": "high"
+        },
+        "source_count": 1,
+        "source_names": [
+          "示例政策来源"
+        ],
+        "published_at": "2026-01-15T01:10:00Z"
+      },
+      {
+        "id": "rss:sample-us:economy-001",
+        "title_cn": "【样例】美国通胀降温但就业仍具韧性",
+        "summary": "样例数据显示美国总体通胀继续回落，就业增长保持韧性，但服务价格、工资增速与历史数据修订仍令利率路径存在不确定性。",
+        "why_important": "通胀和就业组合会直接改变美联储政策预期，并通过美债收益率、美元和权益估值影响全球市场。",
+        "category": "us",
+        "importance": {
+          "score": 88,
+          "level": "high"
+        },
+        "source_count": 1,
+        "source_names": [
+          "示例美国宏观来源"
+        ],
+        "published_at": "2026-01-15T02:20:00Z"
+      },
+      {
+        "id": "gdelt:sample:diplomacy-001",
+        "title_cn": "【样例】多国建立区域安全与航运协调机制",
+        "summary": "多国样例声明建立定期风险通报与航运协调机制，后续仍需通过实际通行量、保险费率和运输时间验证执行效果。",
+        "why_important": "航运安全会影响能源风险溢价、全球运输成本和商品通胀，并进一步传导至央行政策与企业利润。",
+        "category": "international",
+        "importance": {
+          "score": 84,
+          "level": "high"
+        },
+        "source_count": 1,
+        "source_names": [
+          "示例国际来源"
+        ],
+        "published_at": "2026-01-15T03:00:00Z"
+      },
+      {
+        "id": "rss:sample-finance:earnings-001",
+        "title_cn": "【样例】大型云厂商业绩增长并上调AI资本开支",
+        "summary": "样例云厂商季度收入与云业务继续增长，并上调数据中心和AI基础设施资本开支计划；后续焦点转向算力利用率、折旧和自由现金流。",
+        "why_important": "AI资本开支既可能推动云收入与供应链订单，也可能在需求兑现前抬高折旧、能源成本和现金流压力。",
+        "category": "finance",
+        "importance": {
+          "score": 86,
+          "level": "high"
+        },
+        "source_count": 1,
+        "source_names": [
+          "示例公司财报来源"
+        ],
+        "published_at": "2026-01-15T04:15:00Z"
+      },
+      {
+        "id": "rss:sample-ai:chip-001",
+        "title_cn": "【样例】新一代AI加速器公布量产计划",
+        "summary": "样例芯片企业发布数据中心AI加速器，披露性能、功耗、量产窗口与合作伙伴；官方基准仍需独立测试和真实部署验证。",
+        "why_important": "量产进度和客户采用将影响AI资本开支链、先进封装与HBM供需，也决定厂商收入和毛利率能否兑现。",
+        "category": "tech_ai",
+        "importance": {
+          "score": 82,
+          "level": "high"
+        },
+        "source_count": 1,
+        "source_names": [
+          "示例科技来源"
+        ],
+        "published_at": "2026-01-15T05:40:00Z"
+      }
     ]
   },
   "news": [
     {
-      "id":"rss:sample-china:policy-001","title_cn":"【样例】中国发布新一轮产业支持安排","title_original":"Sample: China Announces an Industrial Support Package","summary":"样例政策提出扩大先进制造与绿色产业支持范围，并明确后续实施时间表。","why_important":"政策可能影响重点行业投资节奏，也是观察宏观政策取向的重要信号。","category":"china","importance":{"score":92,"level":"high"},"published_at":"2026-01-15T01:10:00Z","updated_at":"2026-01-15T01:35:00Z","sources":[{"name":"示例中国来源A","url":"https://example.com/sample/china-policy-a","published_at":"2026-01-15T01:10:00Z"},{"name":"示例中国来源B","url":"https://example.org/sample/china-policy-b","published_at":"2026-01-15T01:25:00Z"}],"primary_source":"示例中国来源A","primary_url":"https://example.com/sample/china-policy-a"
+      "id": "rss:sample-china:policy-001",
+      "title_cn": "【样例】先进制造设备更新政策进入实施阶段",
+      "title_original": "Sample: Advanced Manufacturing Upgrade Policy Enters Implementation",
+      "summary": "样例政策明确先进制造与绿色设备更新的支持方向、申报窗口和分阶段执行安排，实际财政规模与地方配套仍待后续细则确认。",
+      "analysis": "【事实层面】本样例设定为一项面向先进制造与绿色设备更新的政策安排，已知信息包括支持方向、申报窗口和分阶段执行时间，但并未假设尚未公布的财政规模、补贴比例或地方配套额度。对企业而言，政策首先影响的是订单可见度和投资回收期：如果设备采购补贴、税收抵扣或融资支持能够较快落地，自动化设备、工业软件、节能改造、电网设备以及高端零部件供应商可能更早看到询价和合同转化；下游制造企业则可能通过降低初始资本支出提高更新意愿。不过，收入确认通常滞后于政策宣布，项目验收、地方预算、客户自有资金和设备交付周期都会决定实际利润贡献，因此不能把政策方向直接等同于上市公司当期业绩。\n\n从产业供需看，短期需求集中释放可能改善部分设备厂商的产能利用率，但也可能带来原材料、关键零部件和工程服务价格上升。如果行业供给充足，新增订单更可能转化为销量增长；如果核心部件受限或同质化竞争激烈，企业可能以价格换份额，收入增长却未必带来毛利率改善。政策若强调国产化、安全可控和能效标准，竞争优势可能向具备认证、渠道和售后能力的头部企业集中，中小厂商则面临研发投入和合规成本上升。\n\n宏观传导上，这类政策能否形成有效增量，需要结合信贷需求、实际利率、企业盈利预期和地方财政约束观察。若融资成本下降、工业企业利润改善且出口订单稳定，政策可能放大制造业资本开支，对工业品需求、用电量和中长期贷款形成支持；若企业仍担心终端需求不足，即使补贴存在，也可能只提前原有采购而非创造新增投资。人民币汇率和海外贸易环境也会影响进口设备成本与出口型企业现金流，进而改变投资意愿。\n\n资产关联应以传导链而非题材标签判断。制造业指数、工业自动化、电力设备、基础材料和相关银行信贷可能受到关注，但不同公司的订单结构、客户集中度和应收账款质量差异很大。偏正面的路径是政策细则清晰、地方资金及时到位、订单与产能利用率同步上升，且价格竞争可控；偏负面的路径是执行延迟、地方配套不足、企业仅替换原有预算，或者原材料上涨侵蚀利润。市场可能先交易政策预期，随后转向验证订单、现金流和利润率，估值能否维持最终仍取决于真实业绩而非文件数量。",
+      "why_important": "政策能否转化为新增订单，将影响制造业资本开支、工业品需求和相关企业利润预期。",
+      "watch_factors": [
+        "地方配套资金与申报进度",
+        "制造业中长期贷款和设备订单",
+        "工业企业利润与产能利用率",
+        "重点供应商毛利率和应收账款"
+      ],
+      "related_assets": [
+        "工业自动化行业：设备更新订单弹性",
+        "电力设备行业：能效改造与配电需求",
+        "制造业指数：资本开支预期"
+      ],
+      "category": "china",
+      "importance": {
+        "score": 92,
+        "level": "high"
+      },
+      "published_at": "2026-01-15T01:10:00Z",
+      "updated_at": "2026-01-15T01:35:00Z",
+      "sources": [
+        {
+          "name": "示例政策来源",
+          "url": "https://example.com/sample/china-policy",
+          "published_at": "2026-01-15T01:10:00Z"
+        }
+      ],
+      "primary_source": "示例政策来源",
+      "primary_url": "https://example.com/sample/china-policy"
     },
     {
-      "id":"rss:sample-us:economy-001","title_cn":"【样例】美国公布最新通胀与就业指标","title_original":"Sample: New US Inflation and Employment Data Released","summary":"样例数据显示通胀继续放缓，就业市场保持韧性，市场重新评估未来政策路径。","why_important":"两项指标会直接影响利率预期，并通过美元与全球资产价格产生外溢影响。","category":"us","importance":{"score":88,"level":"high"},"published_at":"2026-01-15T02:20:00Z","updated_at":"2026-01-15T02:50:00Z","sources":[{"name":"示例美国来源A","url":"https://example.com/sample/us-economy-a","published_at":"2026-01-15T02:20:00Z"},{"name":"示例财经来源A","url":"https://example.net/sample/us-economy-b","published_at":"2026-01-15T02:35:00Z"}],"primary_source":"示例美国来源A","primary_url":"https://example.com/sample/us-economy-a"
+      "id": "rss:sample-us:economy-001",
+      "title_cn": "【样例】美国通胀降温但就业仍具韧性",
+      "title_original": "Sample: US Inflation Cools While Employment Remains Resilient",
+      "summary": "样例数据显示美国总体通胀继续回落，就业增长保持韧性，但服务价格、工资增速与历史数据修订仍令利率路径存在不确定性。",
+      "analysis": "【事实层面】本样例同时观察美国通胀与就业数据，核心不是单个数字高于或低于预期，而是工资、服务价格、劳动参与率和新增就业是否共同指向需求降温。通胀回落如果主要来自能源或商品价格，未必代表具有黏性的住房和服务通胀已经解决；就业保持韧性也需要区分全职与兼职、私人部门与政府部门，以及前值修订。数据公布后，最直接的市场反应通常体现在联邦基金利率期货、两年期美债收益率、美元和成长股估值，但这种反应可能随细项解读而反转。\n\n对企业盈利而言，温和降温的组合通常有利于实际收入和利润率：消费者仍有就业收入，同时原材料、运输和工资压力逐步缓解。零售、航空、酒店和互联网平台可能受益于需求不骤降；高负债企业和房地产相关行业则更依赖融资成本下降。相反，如果就业快速恶化，即使降息预期升温，收入下滑和信用损失也可能抵消估值端的利好。银行需要同时面对净息差、贷款需求和坏账率变化，不能只用“降息利好或利空银行”的单一判断。\n\n利率传导是二阶影响的核心。如果核心通胀持续回落且工资增速与生产率更匹配，美联储可能获得更大政策空间，美债实际收益率下降会降低权益估值的贴现率，并可能削弱美元、改善全球流动性；黄金和部分新兴市场资产可能因此获得支持。如果通胀重新加速而就业仍强，市场可能推迟降息预期，长短端收益率重新上行，久期较长的科技股和高估值资产承压。若出现增长下滑但通胀仍高的组合，政策空间反而更受限制，信用利差和风险溢价可能扩大。\n\n偏正面的情景是通胀逐月放缓、就业从过热转向平衡、企业盈利没有明显衰退，形成所谓软着陆；在这种情况下，标普五百、纳斯达克和投资级债券可能受益，但涨幅仍受当前估值约束。偏负面的情景包括服务通胀顽固导致利率维持高位，或就业突然恶化引发盈利预测下调。投资者还应留意数据修订和基数效应，因为一次月度变化不足以确认趋势。真正需要验证的是金融条件是否温和放松、消费是否保持质量，以及企业在下一轮财报中如何描述订单、工资和定价权。",
+      "why_important": "通胀和就业组合会直接改变美联储政策预期，并通过美债收益率、美元和权益估值影响全球市场。",
+      "watch_factors": [
+        "核心服务通胀与住房分项",
+        "非农就业修订和失业率",
+        "平均时薪与劳动参与率",
+        "美联储利率决议和点阵图",
+        "两年期与十年期美债收益率"
+      ],
+      "related_assets": [
+        "标普500指数：盈利与贴现率共同驱动",
+        "纳斯达克指数：对实际收益率更敏感",
+        "美国国债：政策路径重新定价",
+        "美元指数：利差与避险需求"
+      ],
+      "category": "us",
+      "importance": {
+        "score": 88,
+        "level": "high"
+      },
+      "published_at": "2026-01-15T02:20:00Z",
+      "updated_at": "2026-01-15T02:50:00Z",
+      "sources": [
+        {
+          "name": "示例美国宏观来源",
+          "url": "https://example.com/sample/us-economy",
+          "published_at": "2026-01-15T02:20:00Z"
+        }
+      ],
+      "primary_source": "示例美国宏观来源",
+      "primary_url": "https://example.com/sample/us-economy"
     },
     {
-      "id":"gdelt:sample:diplomacy-001","title_cn":"【样例】多国就区域安全建立新磋商机制","title_original":"Sample: Countries Establish a Regional Security Dialogue","summary":"参与方同意建立定期沟通机制，以降低误判风险并协调后续外交议程。","why_important":"持续沟通有助于降低局势升级概率，并可能影响跨境贸易和能源运输预期。","category":"international","importance":{"score":84,"level":"high"},"published_at":"2026-01-15T03:00:00Z","updated_at":null,"sources":[{"name":"示例国际来源A","url":"https://example.com/sample/regional-dialogue","published_at":"2026-01-15T03:00:00Z"}],"primary_source":"示例国际来源A","primary_url":"https://example.com/sample/regional-dialogue"
+      "id": "gdelt:sample:diplomacy-001",
+      "title_cn": "【样例】多国建立区域安全与航运协调机制",
+      "title_original": "Sample: Countries Establish Regional Security and Shipping Coordination",
+      "summary": "多国样例声明建立定期风险通报与航运协调机制，后续仍需通过实际通行量、保险费率和运输时间验证执行效果。",
+      "analysis": "【事实层面】本样例描述多国建立区域安全与航运协调机制，已确认的内容仅包括定期沟通、风险通报和后续会议安排，并不假设冲突已经结束或运输安全已经完全恢复。对金融市场而言，关键并不是声明本身，而是它能否降低航线中断、保险费率上升和交付延迟的概率。航运公司、能源贸易商、制造企业和零售商会根据实际通行时间与承保条件调整库存和运价，外交机制只有转化为可观察的运营改善，才会影响成本和利润。\n\n直接影响首先出现在运输和供应链。若主要航线恢复稳定，集装箱周转效率提高，绕行里程、燃油消耗和保险附加费可能下降，进口商的到岸成本与安全库存需求随之缓解。航运企业则可能面对运价从高位回落，收入端受压但运营不确定性降低。航空、化工和制造业对能源及交付周期敏感，成本改善可能逐步反映在毛利率；然而长期合同、库存计价和套期保值会造成时间滞后，不能用现货运价变化直接推算季度利润。\n\n二阶影响连接能源、通胀和货币政策。如果安全风险下降压低原油风险溢价和运输成本，商品通胀可能边际缓和，为主要央行提供更多政策灵活性；如果局势再次升级，油价和天然气价格上升可能推高通胀预期与债券收益率，尤其影响能源进口国的贸易余额和汇率。美元可能在风险规避阶段走强，而黄金、能源和国防相关资产可能获得避险或供给风险溢价。对新兴市场而言，外部融资成本、食品能源进口账单和资本流动会共同决定影响方向。\n\n偏正面的路径是沟通机制持续运作、实际袭击或扣押事件减少、航运保险和运价连续回落，企业能够降低库存并恢复正常交付；偏负面的路径是机制缺乏约束力、局部事件重新升级，或者主要参与方政策目标分歧扩大。即使风险下降，也要警惕市场已经提前反映乐观预期，相关资产未必继续同方向运行。值得关注的不是一次会议措辞，而是后续通行量、油轮与集装箱运价、保险报价、港口等待时间和能源库存是否同步改善，这些变量才能验证外交进展是否进入实体经济。",
+      "why_important": "航运安全会影响能源风险溢价、全球运输成本和商品通胀，并进一步传导至央行政策与企业利润。",
+      "watch_factors": [
+        "关键航线通行量与绕行比例",
+        "油轮和集装箱现货运价",
+        "航运保险附加费",
+        "原油与天然气库存",
+        "港口等待时间"
+      ],
+      "related_assets": [
+        "原油：地缘与运输风险溢价",
+        "航运行业：运价和运营成本变化",
+        "黄金：风险规避需求",
+        "能源进口国货币：贸易条件变化"
+      ],
+      "category": "international",
+      "importance": {
+        "score": 84,
+        "level": "high"
+      },
+      "published_at": "2026-01-15T03:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "示例国际来源",
+          "url": "https://example.com/sample/shipping-security",
+          "published_at": "2026-01-15T03:00:00Z"
+        }
+      ],
+      "primary_source": "示例国际来源",
+      "primary_url": "https://example.com/sample/shipping-security"
     },
     {
-      "id":"openbb:sample:macro-001","title_cn":"【样例】全球主要市场调整利率预期","title_original":"Sample: Global Markets Reprice Interest-Rate Outlook","summary":"样例市场数据显示债券收益率与主要股指出现调整，投资者关注央行最新表态。","why_important":"利率预期变化会影响企业融资成本、汇率和风险资产估值。","category":"finance","importance":{"score":81,"level":"high"},"published_at":"2026-01-15T04:15:00Z","updated_at":null,"sources":[{"name":"示例财经来源A","url":"https://example.com/sample/rate-outlook","published_at":"2026-01-15T04:15:00Z"}],"primary_source":"示例财经来源A","primary_url":"https://example.com/sample/rate-outlook"
+      "id": "rss:sample-finance:earnings-001",
+      "title_cn": "【样例】大型云厂商业绩增长并上调AI资本开支",
+      "title_original": "Sample: Cloud Provider Raises AI Capital Spending After Earnings Growth",
+      "summary": "样例云厂商季度收入与云业务继续增长，并上调数据中心和AI基础设施资本开支计划；后续焦点转向算力利用率、折旧和自由现金流。",
+      "analysis": "【事实层面】本样例设定为一家大型云计算公司公布季度业绩：云业务收入继续增长，管理层同时上调数据中心与人工智能基础设施资本开支计划。分析必须把已披露的收入、利润率、订单余额和资本开支指引，与市场对未来增长的推论分开。收入增长说明客户使用量和合同转化仍在推进，但不能仅凭增长率判断盈利质量；需要结合价格优惠、折旧年限、能源成本、芯片采购和销售费用，判断增量收入能否转化为自由现金流。\n\n直接影响存在收入端和成本端两条线。更高的AI算力需求可能提升云服务使用量、长期合同和平台黏性，并带动数据库、网络、安全与开发工具交叉销售。与此同时，GPU、服务器、土地、电力接入和冷却系统需要前置投入，折旧与运营成本会在未来多个季度进入利润表。如果需求兑现速度慢于资产投放，资本回报率和自由现金流可能下降；如果利用率快速提升且公司维持定价权，规模效应可能改善单位推理成本和营业利润率。\n\n二阶影响会沿着AI资本开支链传导。上游半导体、先进封装、光模块、服务器、网络设备和电力基础设施可能获得订单支持；公用事业和数据中心运营商需要解决电网接入与长期供电。竞争层面，头部云厂商扩大投资可能提高行业进入门槛，但也可能引发价格竞争和重复建设。利率与美债收益率同样重要，因为高资本开支企业的估值依赖远期现金流，贴现率上升会压缩估值倍数，即使收入保持增长。美元变化还会影响跨国收入换算和海外设备成本。\n\n偏正面的路径是订单余额、客户采用率和算力利用率同步提高，新增资本开支带来持续收入，并且管理层能够维持毛利率与现金流纪律；这将支持云平台、芯片和基础设施供应链的盈利预期。偏负面的路径是客户试验项目难以进入生产环境，供电或芯片限制拖慢部署，折旧增长快于收入，或者竞争导致单价下降。市场还可能关注公司是否通过延长设备折旧年限美化短期利润，因此应结合现金资本开支和自由现金流判断。相关股票、云计算ETF、半导体指数和电力设备板块可能受到影响，但敏感度取决于各自订单敞口与估值水平，不能简单视为统一方向交易。",
+      "why_important": "AI资本开支既可能推动云收入与供应链订单，也可能在需求兑现前抬高折旧、能源成本和现金流压力。",
+      "watch_factors": [
+        "下一季度云业务收入增速",
+        "资本开支与自由现金流",
+        "数据中心利用率和折旧",
+        "AI订单余额与客户转化",
+        "管理层毛利率指引"
+      ],
+      "related_assets": [
+        "云计算公司：AI服务收入与资本回报",
+        "半导体指数：加速器和网络订单",
+        "数据中心基础设施：电力与冷却需求",
+        "美国十年期国债：估值贴现率"
+      ],
+      "category": "finance",
+      "importance": {
+        "score": 86,
+        "level": "high"
+      },
+      "published_at": "2026-01-15T04:15:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "示例公司财报来源",
+          "url": "https://example.com/sample/cloud-earnings",
+          "published_at": "2026-01-15T04:15:00Z"
+        }
+      ],
+      "primary_source": "示例公司财报来源",
+      "primary_url": "https://example.com/sample/cloud-earnings"
     },
     {
-      "id":"rss:sample-ai:model-001","title_cn":"【样例】研究机构发布高效多模态模型","title_original":"Sample: Research Lab Releases an Efficient Multimodal Model","summary":"样例模型以更低推理成本处理文本与图像任务，并公布了评测方法和技术报告。","why_important":"成本下降可能扩大多模态应用范围，但真实效果仍需独立评测验证。","category":"tech_ai","importance":{"score":79,"level":"medium"},"published_at":"2026-01-15T05:40:00Z","updated_at":"2026-01-15T06:00:00Z","sources":[{"name":"示例科技来源A","url":"https://example.com/sample/multimodal-model","published_at":"2026-01-15T05:40:00Z"}],"primary_source":"示例科技来源A","primary_url":"https://example.com/sample/multimodal-model"
-    },
-    {
-      "id":"google_news:sample:trade-001","title_cn":"【样例】多方公布新的贸易协调安排","title_original":"Sample: New Trade Coordination Measures Announced","summary":"样例安排聚焦关键商品通关和供应链信息共享，相关细则将在后续会议中确认。","why_important":"执行效果可能影响区域供应链效率和部分行业成本。","category":"international","importance":{"score":68,"level":"medium"},"published_at":"2026-01-15T06:10:00Z","updated_at":null,"sources":[{"name":"示例国际来源B","url":"https://example.org/sample/trade-coordination","published_at":"2026-01-15T06:10:00Z"}],"primary_source":"示例国际来源B","primary_url":"https://example.org/sample/trade-coordination"
-    },
-    {
-      "id":"rss:sample-china:local-001","title_cn":"【样例】重点城市公布消费支持计划","title_original":null,"summary":"样例计划覆盖绿色家电和公共服务消费，具体执行额度与期限由地方后续公布。","why_important":null,"category":"china","importance":{"score":55,"level":"medium"},"published_at":"2026-01-15T07:05:00Z","updated_at":null,"sources":[{"name":"示例中国来源C","url":"https://example.cn/sample/consumption-plan","published_at":null}],"primary_source":"示例中国来源C","primary_url":"https://example.cn/sample/consumption-plan"
+      "id": "rss:sample-ai:chip-001",
+      "title_cn": "【样例】新一代AI加速器公布量产计划",
+      "title_original": "Sample: Next-Generation AI Accelerator Announces Production Plan",
+      "summary": "样例芯片企业发布数据中心AI加速器，披露性能、功耗、量产窗口与合作伙伴；官方基准仍需独立测试和真实部署验证。",
+      "analysis": "【事实层面】本样例描述一家芯片企业发布面向数据中心的新一代AI加速器，并披露性能、功耗、量产窗口和首批合作伙伴。厂商给出的基准测试属于官方资料，除非有独立评测，否则不能直接当作真实工作负载中的确定优势。研究重点应放在芯片是否按期量产、软件栈是否成熟、客户能否从现有平台迁移，以及整机、网络和电力系统能否配套，而不是只比较单一峰值算力。\n\n对公司收入与利润的直接影响取决于供货规模、平均售价和产品组合。新产品若进入头部云厂商和模型公司的采购计划，可能扩大数据中心收入并增强生态黏性；但先进制程、封装、HBM内存和高速互连均可能成为成本与产能瓶颈。早期产品通常伴随研发、验证和客户支持费用，毛利率未必立即改善。若供应紧张，公司可能拥有较强定价权；若竞争对手同步推出替代方案或客户加快自研芯片，市场份额与价格都可能受到压力。\n\n二阶影响覆盖整个AI资本开支链。更高算力密度可能减少完成同一任务所需的芯片数量，却提高单机柜功率、液冷和网络需求，因此不能简单推断总电力消耗下降。数据中心建设、变压器、配电、光模块、交换机和服务器代工可能随部署扩大受益；云厂商则需要在折旧、利用率和客户付费意愿之间平衡。如果模型效率提升速度快于需求增长，部分算力投资可能延后；如果推理应用迅速扩散，单位成本下降反而可能刺激总使用量，形成类似需求弹性效应。\n\n利率和风险偏好会影响估值而非技术事实。半导体公司通常以较远期盈利定价，美债收益率上升或流动性收紧可能压缩高估值公司的倍数。偏正面的路径是量产按期、软件兼容性改善、云客户订单扩大且供应链良率提升，收入与毛利率共同兑现；偏负面的路径包括延期、独立测试不及宣传、客户集中度过高、出口限制收紧或电力接入拖慢数据中心建设。观察时应区分发布会承诺、客户意向与实际收入确认，并跟踪订单、交付、库存、先进封装产能、HBM供应、开发者迁移和云厂商资本开支。关联资产可以包括芯片设计公司、晶圆代工、存储、设备、服务器、网络和数据中心基础设施，但每一环节的利润弹性不同。",
+      "why_important": "量产进度和客户采用将影响AI资本开支链、先进封装与HBM供需，也决定厂商收入和毛利率能否兑现。",
+      "watch_factors": [
+        "量产时间、良率与实际交付",
+        "独立性能和能效测试",
+        "云厂商采购与资本开支指引",
+        "先进封装和HBM产能",
+        "软件生态与客户迁移速度"
+      ],
+      "related_assets": [
+        "AI芯片设计公司：产品份额与定价",
+        "晶圆代工和先进封装：产能利用率",
+        "HBM存储：供需与价格",
+        "数据中心网络和电力设备：配套投资"
+      ],
+      "category": "tech_ai",
+      "importance": {
+        "score": 82,
+        "level": "high"
+      },
+      "published_at": "2026-01-15T05:40:00Z",
+      "updated_at": "2026-01-15T06:00:00Z",
+      "sources": [
+        {
+          "name": "示例科技来源",
+          "url": "https://example.com/sample/ai-accelerator",
+          "published_at": "2026-01-15T05:40:00Z"
+        }
+      ],
+      "primary_source": "示例科技来源",
+      "primary_url": "https://example.com/sample/ai-accelerator"
     }
   ],
   "categories": [
-    {"id":"china","display_name":"中国"},
-    {"id":"us","display_name":"美国"},
-    {"id":"international","display_name":"国际"},
-    {"id":"finance","display_name":"财经"},
-    {"id":"tech_ai","display_name":"科技 / AI"}
+    {
+      "id": "china",
+      "display_name": "中国"
+    },
+    {
+      "id": "us",
+      "display_name": "美国"
+    },
+    {
+      "id": "international",
+      "display_name": "国际"
+    },
+    {
+      "id": "finance",
+      "display_name": "财经"
+    },
+    {
+      "id": "tech_ai",
+      "display_name": "科技 / AI"
+    }
   ],
   "market": null
 }

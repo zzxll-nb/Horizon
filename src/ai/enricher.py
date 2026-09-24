@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+import re
 from dataclasses import dataclass, field
 from typing import Any, Callable, Optional, TypeVar
 
@@ -34,6 +35,8 @@ from ..processing.profiles import LoadedProfile, ProfileBlock, ProfileRegistry
 from ..processing.tools import ToolRegistry, ToolResult
 
 logger = logging.getLogger(__name__)
+
+MIN_CHINESE_ANALYSIS_CHARS = 700
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
@@ -229,7 +232,9 @@ class ContentEnricher:
                 item, profile, language, tool_results
             )
             self._expand_request_source_refs(generated.blocks, tool_results)
-            self._validate_blocks(generated.blocks, profile, tool_results)
+            self._validate_blocks(
+                generated.blocks, profile, tool_results, language=language
+            )
             generated.title = normalize_language(generated.title, language)
             for block in generated.blocks:
                 block.title = normalize_language(block.title, language)
@@ -349,6 +354,7 @@ class ContentEnricher:
                     raise ValueError(
                         "missing required blocks: " + ", ".join(sorted(missing))
                     )
+                self._validate_analysis_length(generated.blocks, language)
 
             generated = await self._complete_model(
                 GeneratedArtifact,
@@ -460,10 +466,40 @@ class ContentEnricher:
         return sources
 
     @staticmethod
+    def _validate_analysis_length(
+        blocks: list[ContentBlock], language: str
+    ) -> None:
+        if language.lower() != "zh":
+            return
+        analysis = next((block for block in blocks if block.id == "analysis"), None)
+        if analysis is None:
+            return
+        chinese_chars = len(re.findall(r"[\u3400-\u9fff]", analysis.content))
+        if chinese_chars < MIN_CHINESE_ANALYSIS_CHARS:
+            raise ValueError(
+                "analysis must contain at least "
+                f"{MIN_CHINESE_ANALYSIS_CHARS} Chinese characters; got {chinese_chars}"
+            )
+        watch_factors = next(
+            (block for block in blocks if block.id == "watch_factors"), None
+        )
+        if watch_factors is None:
+            raise ValueError("watch_factors block is required for deep analysis")
+        factors = [
+            line.strip().lstrip("-•* ").strip()
+            for line in watch_factors.content.splitlines()
+            if line.strip().lstrip("-•* ").strip()
+        ]
+        if not 2 <= len(set(factors)) <= 5:
+            raise ValueError("watch_factors must contain 2 to 5 unique lines")
+
+    @staticmethod
     def _validate_blocks(
         blocks: list[ContentBlock],
         profile: LoadedProfile,
         tool_results: list[ToolResult],
+        *,
+        language: str | None = None,
     ) -> None:
         configured: dict[str, ProfileBlock] = {
             block.id: block for block in profile.definition.enrichment.blocks
@@ -495,3 +531,5 @@ class ContentEnricher:
             raise ValueError(
                 f"Artifact is missing required blocks: {', '.join(sorted(missing))}"
             )
+        if language is not None:
+            ContentEnricher._validate_analysis_length(blocks, language)

@@ -9,7 +9,7 @@ async function readSnapshot(filePath: string): Promise<DashboardSnapshot> {
   const content = await readFile(filePath, "utf8");
   const snapshot = JSON.parse(content) as DashboardSnapshot;
 
-  if (snapshot.schema_version !== "1.0" || !Array.isArray(snapshot.news)) {
+  if (!["1.0", "1.1"].includes(snapshot.schema_version) || !Array.isArray(snapshot.news)) {
     throw new Error(`不支持的 DashboardSnapshot：${filePath}`);
   }
   return snapshot;

@@ -501,6 +501,29 @@ def test_enrichment_rejects_empty_required_block():
         )
 
 
+def test_chinese_deep_analysis_requires_700_characters_and_watch_factors():
+    blocks = [
+        ContentBlock(
+            id="analysis",
+            title="深度分析",
+            content="分析" * 349,
+            source_refs=[],
+        ),
+        ContentBlock(
+            id="watch_factors",
+            title="后续观察指标",
+            content="- 毛利率\n- 资本开支",
+            source_refs=[],
+        ),
+    ]
+
+    with pytest.raises(ValueError, match="at least 700 Chinese characters"):
+        ContentEnricher._validate_analysis_length(blocks, "zh")
+
+    blocks[0].content = "分析" * 350
+    ContentEnricher._validate_analysis_length(blocks, "zh")
+
+
 def test_enrichment_batch_reports_failure_without_discarding_successes():
     async def complete(**kwargs):
         raise RuntimeError("AI unavailable")

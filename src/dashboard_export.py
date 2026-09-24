@@ -11,7 +11,7 @@ from .models import ContentBlock, ContentItem
 
 logger = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.1"
 CATEGORY_MAP = {
     "china-news": "china",
     "us-news": "us",
@@ -37,6 +37,26 @@ def dashboard_skip_reason(item: ContentItem) -> str | None:
         return f"unmapped_profile:{processing.classification.profile}"
     if processing.analysis.score is None:
         return "missing_importance_score"
+    artifact = processing.artifacts.get("zh")
+    if artifact is None:
+        artifact = next(
+            (
+                value
+                for key, value in processing.artifacts.items()
+                if key.lower().startswith("zh")
+            ),
+            None,
+        )
+    if artifact is None:
+        return "missing_deep_analysis"
+    analysis = _block(artifact.blocks, "analysis")
+    if analysis is None or not analysis.content.strip():
+        return "missing_deep_analysis"
+    if _chinese_char_count(analysis.content) < 700:
+        return "short_deep_analysis"
+    watch_factors = _list_block(_block(artifact.blocks, "watch_factors"))
+    if not 2 <= len(watch_factors) <= 5:
+        return "invalid_watch_factors"
     return None
 
 
@@ -76,6 +96,21 @@ def _source_name(item: ContentItem) -> str:
 
 def _block(blocks: Iterable[ContentBlock], block_id: str) -> ContentBlock | None:
     return next((block for block in blocks if block.id == block_id), None)
+
+
+def _chinese_char_count(value: str) -> int:
+    return sum("\u3400" <= char <= "\u9fff" for char in value)
+
+
+def _list_block(block: ContentBlock | None) -> list[str]:
+    if block is None:
+        return []
+    values = []
+    for line in block.content.splitlines():
+        value = line.strip().lstrip("-•* ").strip()
+        if value:
+            values.append(value)
+    return list(dict.fromkeys(values))
 
 
 def _importance(score: float) -> dict[str, int | str]:
@@ -120,6 +155,11 @@ def _news_event(item: ContentItem) -> dict[str, Any] | None:
         logger.warning("Skipping dashboard item %s without importance score", item.id)
         return None
 
+    contract_skip = dashboard_skip_reason(item)
+    if contract_skip is not None:
+        logger.warning("Skipping dashboard item %s: %s", item.id, contract_skip)
+        return None
+
     artifact = processing.artifacts.get("zh")
     if artifact is None:
         artifact = next(
@@ -129,6 +169,10 @@ def _news_event(item: ContentItem) -> dict[str, Any] | None:
     blocks = artifact.blocks if artifact else []
     summary_block = _block(blocks, "summary")
     impact_block = _block(blocks, "impact")
+    analysis_block = _block(blocks, "analysis")
+    watch_factors_block = _block(blocks, "watch_factors")
+    related_assets_block = _block(blocks, "related_assets")
+    assert analysis_block is not None
     title_cn = artifact.title if artifact and artifact.title.strip() else item.title
     summary = (
         summary_block.content
@@ -144,9 +188,12 @@ def _news_event(item: ContentItem) -> dict[str, Any] | None:
         "title_cn": title_cn,
         "title_original": None if item.title == title_cn else item.title,
         "summary": summary,
+        "analysis": analysis_block.content,
         "why_important": (
             impact_block.content if impact_block and impact_block.content.strip() else None
         ),
+        "watch_factors": _list_block(watch_factors_block),
+        "related_assets": _list_block(related_assets_block),
         "category": category,
         "importance": _importance(score),
         "published_at": _utc_iso(item.published_at),

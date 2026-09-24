@@ -1,4 +1,4 @@
-import { ArrowUpRight, Layers3 } from "lucide-react";
+import { ArrowUpRight, ChevronDown, Layers3 } from "lucide-react";
 
 import { Importance } from "@/components/briefing";
 import type { DashboardSnapshot, NewsEvent } from "@/types/dashboard";
@@ -35,6 +35,29 @@ function NewsRow({ item }: { item: NewsEvent }) {
           <span className="flex items-center gap-1.5"><Layers3 size={13} />{sourceLabel}</span>
         </div>
         {item.why_important && <p className="mt-2.5 max-w-3xl border-l border-zinc-200 pl-3 text-xs leading-5 text-zinc-500"><span className="font-medium text-zinc-600">为什么重要：</span>{item.why_important}</p>}
+        {item.analysis && (
+          <details className="group mt-4 max-w-4xl rounded-xl bg-zinc-50 px-4 py-3 open:pb-5">
+            <summary className="flex cursor-pointer list-none items-center gap-1.5 text-sm font-medium text-zinc-700 marker:content-none">
+              查看深度分析
+              <ChevronDown size={15} className="text-zinc-400 group-open:rotate-180" />
+            </summary>
+            <div className="mt-4 whitespace-pre-line text-[15px] leading-8 text-zinc-700">{item.analysis}</div>
+            {!!item.watch_factors?.length && (
+              <div className="mt-5 border-t border-zinc-200 pt-4">
+                <h4 className="text-sm font-semibold text-zinc-800">后续观察指标</h4>
+                <ul className="mt-2 space-y-1.5 text-sm leading-6 text-zinc-600">
+                  {item.watch_factors.map((factor) => <li key={factor}>• {factor}</li>)}
+                </ul>
+              </div>
+            )}
+            {!!item.related_assets?.length && (
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-medium text-zinc-500">关联资产</span>
+                {item.related_assets.map((asset) => <span key={asset} className="rounded-full bg-white px-2.5 py-1 text-xs text-zinc-600">{asset}</span>)}
+              </div>
+            )}
+          </details>
+        )}
       </div>
       <div className="flex items-end justify-start sm:col-start-2 lg:col-start-auto lg:justify-end">
         <a className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-700 transition-colors hover:text-[#E86F00]" href={item.primary_url} target="_blank" rel="noreferrer">
