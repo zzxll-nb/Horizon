@@ -1,6 +1,7 @@
 """Storage manager for configuration and state persistence."""
 
 import json
+import logging
 import os
 import re
 import shutil
@@ -11,6 +12,9 @@ from pydantic import ValidationError
 
 from .._file_utils import _atomic_write_text
 from ..models import Config
+
+
+logger = logging.getLogger(__name__)
 
 
 # Matches ${VAR_NAME} in string config values. Names follow env-var rules
@@ -67,9 +71,13 @@ class StorageManager:
         self.data_dir = Path(data_dir)
         self.config_path = Path(config_path) if config_path is not None else self.data_dir / "config.json"
         self.summaries_dir = self.data_dir / "summaries"
+        self.dashboard_dir = self.data_dir / "dashboard"
+        self.market_dir = self.data_dir / "market"
 
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.summaries_dir.mkdir(parents=True, exist_ok=True)
+        self.dashboard_dir.mkdir(parents=True, exist_ok=True)
+        self.market_dir.mkdir(parents=True, exist_ok=True)
 
     def load_config(self) -> Config:
         if not self.config_path.exists():
@@ -128,6 +136,37 @@ class StorageManager:
         _atomic_write_text(filepath, markdown)
 
         return filepath
+
+    def save_dashboard_snapshot(self, date: str, snapshot: dict[str, Any]) -> tuple[Path, Path]:
+        """Save the latest dashboard snapshot and a dated archive atomically."""
+        content = json.dumps(snapshot, indent=2, ensure_ascii=False) + "\n"
+        archive_path = safe_output_path(self.dashboard_dir, f"{date}.json")
+        latest_path = safe_output_path(self.dashboard_dir, "latest.json")
+
+        _atomic_write_text(archive_path, content)
+        _atomic_write_text(latest_path, content)
+
+        return latest_path, archive_path
+
+    def save_market_snapshot(self, snapshot: dict[str, Any]) -> Path:
+        """Atomically save the latest market snapshot used by Dashboard."""
+        latest_path = safe_output_path(self.market_dir, "latest.json")
+        content = json.dumps(snapshot, indent=2, ensure_ascii=False) + "\n"
+        _atomic_write_text(latest_path, content)
+        return latest_path
+
+    def load_market_snapshot(self) -> Any | None:
+        """Load the latest validated-by-caller market snapshot, if present."""
+        latest_path = safe_output_path(self.market_dir, "latest.json")
+        if not latest_path.exists():
+            return None
+        try:
+            from ..market_data import MarketSnapshot
+
+            return MarketSnapshot.model_validate_json(latest_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError, ValidationError) as error:
+            logger.warning("Unable to load market snapshot %s: %s", latest_path, error)
+            return None
 
     def load_subscribers(self) -> list:
         """Loads the list of email subscribers."""

@@ -29,6 +29,7 @@ dependencies = [
 dev = [
     "pytest>=8.0.0",
     "pytest-cov>=5.0.0",
+    "jsonschema>=4.23.0",
 ]
 openbb = [
     "openbb>=4.4.0",
@@ -44,6 +45,7 @@ horizon-mcp = "src.mcp.server:main"
 horizon-wizard = "src.setup.wizard:main"
 horizon-webhook = "src.services.webhook_cli:main"
 horizon-wechat = "src.services.wechat_cli:main"
+horizon-market = "src.market_data:main"
 
 [build-system]
 requires = ["hatchling"]

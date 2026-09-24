@@ -43,6 +43,11 @@ def main():
 
     parser = argparse.ArgumentParser(description="Horizon - AI-Driven Information Aggregation System")
     parser.add_argument("--hours", type=int, help="Force fetch from last N hours")
+    parser.add_argument(
+        "--skip-daily-summary",
+        action="store_true",
+        help="Update processed dashboard data without writing the Markdown Daily Briefing",
+    )
     add_data_dir_arguments(parser)
     add_log_level_argument(parser)
     args = parser.parse_args()
@@ -102,7 +107,12 @@ def main():
 
         # Create and run orchestrator
         orchestrator = HorizonOrchestrator(config, storage, console=console)
-        asyncio.run(orchestrator.run(force_hours=args.hours))
+        asyncio.run(
+            orchestrator.run(
+                force_hours=args.hours,
+                generate_daily_summary=not args.skip_daily_summary,
+            )
+        )
 
     except KeyboardInterrupt:
         console.print(f"\n[yellow]{icons['warning']} Interrupted by user[/yellow]")

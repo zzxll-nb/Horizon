@@ -1,0 +1,115 @@
+name: Refresh Dashboard Data
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: dashboard-publish
+  cancel-in-progress: false
+
+jobs:
+  refresh-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore the last successful snapshots
+        run: |
+          git fetch --no-tags origin '+refs/heads/dashboard-data:refs/remotes/origin/dashboard-data' || true
+          for snapshot in data/dashboard/latest.json data/market/latest.json; do
+            git checkout origin/dashboard-data -- "$snapshot" 2>/dev/null || true
+          done
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Horizon
+        run: python -m pip install -e .
+
+      - name: Prepare the local Horizon configuration
+        run: cp data/config.china-example.json data/config.json
+
+      - name: Refresh incremental news snapshot
+        id: news
+        continue-on-error: true
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: horizon --hours 1 --skip-daily-summary --log-level WARNING
+
+      - name: Refresh market snapshot
+        id: market
+        continue-on-error: true
+        run: horizon-market
+
+      - name: Persist successful snapshots on the data branch
+        env:
+          STATE_DIR: ${{ runner.temp }}/dashboard-data
+          NEWS_OUTCOME: ${{ steps.news.outcome }}
+          MARKET_OUTCOME: ${{ steps.market.outcome }}
+        run: |
+          if git show-ref --verify --quiet refs/remotes/origin/dashboard-data; then
+            git worktree add --detach "$STATE_DIR" origin/dashboard-data
+          else
+            git worktree add -b dashboard-data "$STATE_DIR"
+          fi
+          if [ "$NEWS_OUTCOME" = "success" ] && [ -f data/dashboard/latest.json ]; then
+            mkdir -p "$STATE_DIR/data/dashboard"
+            cp data/dashboard/latest.json "$STATE_DIR/data/dashboard/latest.json"
+            git -C "$STATE_DIR" add -f data/dashboard/latest.json
+          fi
+          if [ "$MARKET_OUTCOME" = "success" ] && [ -f data/market/latest.json ]; then
+            mkdir -p "$STATE_DIR/data/market"
+            cp data/market/latest.json "$STATE_DIR/data/market/latest.json"
+            git -C "$STATE_DIR" add -f data/market/latest.json
+          fi
+          if ! git -C "$STATE_DIR" diff --cached --quiet; then
+            git -C "$STATE_DIR" config user.name "github-actions[bot]"
+            git -C "$STATE_DIR" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git -C "$STATE_DIR" commit -m "chore: refresh dashboard snapshots"
+            git -C "$STATE_DIR" push origin HEAD:dashboard-data
+          fi
+          for snapshot in data/dashboard/latest.json data/market/latest.json; do
+            if [ -f "$STATE_DIR/$snapshot" ]; then
+              mkdir -p "$(dirname "$snapshot")"
+              cp "$STATE_DIR/$snapshot" "$snapshot"
+            else
+              rm -f "$snapshot"
+            fi
+          done
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: dashboard/pnpm-lock.yaml
+
+      - name: Build static Dashboard
+        env:
+          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+        run: |
+          corepack enable
+          pnpm --dir dashboard install --frozen-lockfile
+          pnpm --dir dashboard lint
+          pnpm --dir dashboard typecheck
+          pnpm --dir dashboard build
+
+      - name: Record task outcomes
+        run: |
+          echo "news refresh: ${{ steps.news.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "market refresh: ${{ steps.market.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "static output: dashboard/out" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboard/out
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4

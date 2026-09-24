@@ -34,6 +34,7 @@ from .ai.enricher import ContentEnricher, EnrichmentBatchResult
 from .ai.tokens import get_usage_snapshot
 from .processing import ProfileRegistry
 from .processing.tools import ToolRegistry
+from .dashboard_export import build_dashboard_snapshot
 
 
 _TRACKING_QUERY_PARAMETERS = {
@@ -224,11 +225,17 @@ class HorizonOrchestrator:
         )
         self.last_fetch_report: Optional[FetchReport] = None
 
-    async def run(self, force_hours: int = None) -> None:
+    async def run(
+        self,
+        force_hours: int = None,
+        generate_daily_summary: bool = True,
+    ) -> None:
         """Execute the complete workflow.
 
         Args:
-            force_hours: Optional override for time window in hours
+            force_hours: Optional override for time window in hours.
+            generate_daily_summary: Whether to write and deliver the Markdown
+                daily briefing after the snapshot is updated.
         """
         self.console.print(
             f"[bold cyan]{self.icons['start']} Horizon - Starting aggregation...[/bold cyan]\n"
@@ -298,8 +305,36 @@ class HorizonOrchestrator:
             # 6. Search related stories + enrich with background knowledge (2nd AI pass)
             await self.enrich_items(important_items)
 
-            # 7. Generate and save daily summaries for each configured language
-            today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            generated_at = datetime.now(timezone.utc)
+            today = generated_at.strftime("%Y-%m-%d")
+            try:
+                snapshot = build_dashboard_snapshot(
+                    important_items,
+                    period_start=since,
+                    period_end=generated_at,
+                    total_fetched=len(all_items),
+                    generated_at=generated_at,
+                )
+                latest_path, archive_path = self.storage.save_dashboard_snapshot(
+                    today, snapshot
+                )
+                self.console.print(
+                    f"{self.icons['save']} Saved dashboard snapshot to: "
+                    f"{latest_path} (archive: {archive_path})\n"
+                )
+            except Exception as e:
+                self.console.print(
+                    f"[yellow]{self.icons['warning']} Failed to export dashboard "
+                    f"snapshot: {e}[/yellow]\n"
+                )
+
+            # 7. Generate and save daily summaries for each configured language.
+            # Scheduled incremental refreshes keep this off to avoid repeatedly
+            # generating a full Daily Briefing every half hour.
+            if not generate_daily_summary:
+                self.console.print("[dim]Skipping Daily Briefing for incremental refresh.[/dim]\n")
+                return
+
             for lang in self.config.ai.languages:
                 summarizer = DailySummarizer(
                     profile_names=self.profiles.names,

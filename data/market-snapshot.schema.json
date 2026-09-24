@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://horizon.local/schemas/market-snapshot-1.0.json",
+  "title": "MarketSnapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "data_status", "generated_at", "provider", "assets"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "data_status": {"enum": ["live", "partial", "stale", "unavailable", "sample"]},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "provider": {"type": "string", "minLength": 1},
+    "assets": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/asset"}
+    }
+  },
+  "$defs": {
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "symbol", "current_value", "change", "change_percent", "updated_at", "data_status"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "name": {"type": "string", "minLength": 1},
+        "symbol": {"type": "string", "minLength": 1},
+        "current_value": {"type": ["number", "null"]},
+        "change": {"type": ["number", "null"]},
+        "change_percent": {"type": ["number", "null"]},
+        "updated_at": {"type": ["string", "null"], "format": "date-time"},
+        "data_status": {"enum": ["live", "stale", "unavailable", "sample"]}
+      }
+    }
+  }
+}

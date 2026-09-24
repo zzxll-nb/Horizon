@@ -173,6 +173,16 @@ cp .env.example .env          # Add your API keys
 cp data/config.example.json data/config.json  # Customize your sources
 ```
 
+### 中文时政财经日报（最小运行）
+
+```bash
+python3 -m pip install -e .
+cp data/config.china-example.json data/config.json
+cp .env.example .env
+# 在 .env 中设置 DEEPSEEK_API_KEY
+horizon --hours 24
+```
+
 Minimal manual configuration:
 
 ```jsonc

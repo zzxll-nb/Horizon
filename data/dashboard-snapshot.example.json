@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "data_status": "sample",
+  "fixture_note": "这是用于开发和测试的虚构样例，不代表实时新闻或真实市场信息。",
+  "generated_at": "2026-01-15T08:30:00Z",
+  "period_start": "2026-01-14T08:30:00Z",
+  "period_end": "2026-01-15T08:30:00Z",
+  "briefing": {
+    "title": "【样例数据】今日 AI Briefing",
+    "summary": "本期样例覆盖中国政策、美国经济、国际协调、全球市场及人工智能治理，用于验证工作台数据展示。",
+    "events": [
+      {"id":"rss:sample-china:policy-001","title_cn":"【样例】中国发布新一轮产业支持安排","summary":"样例政策提出扩大先进制造与绿色产业支持范围，并明确后续实施时间表。","why_important":"政策可能影响重点行业投资节奏，也是观察宏观政策取向的重要信号。","category":"china","importance":{"score":92,"level":"high"},"source_count":2,"source_names":["示例中国来源A","示例中国来源B"],"published_at":"2026-01-15T01:10:00Z"},
+      {"id":"rss:sample-us:economy-001","title_cn":"【样例】美国公布最新通胀与就业指标","summary":"样例数据显示通胀继续放缓，就业市场保持韧性，市场重新评估未来政策路径。","why_important":"两项指标会直接影响利率预期，并通过美元与全球资产价格产生外溢影响。","category":"us","importance":{"score":88,"level":"high"},"source_count":2,"source_names":["示例美国来源A","示例财经来源A"],"published_at":"2026-01-15T02:20:00Z"},
+      {"id":"gdelt:sample:diplomacy-001","title_cn":"【样例】多国就区域安全建立新磋商机制","summary":"参与方同意建立定期沟通机制，以降低误判风险并协调后续外交议程。","why_important":"持续沟通有助于降低局势升级概率，并可能影响跨境贸易和能源运输预期。","category":"international","importance":{"score":84,"level":"high"},"source_count":1,"source_names":["示例国际来源A"],"published_at":"2026-01-15T03:00:00Z"},
+      {"id":"openbb:sample:macro-001","title_cn":"【样例】全球主要市场调整利率预期","summary":"样例市场数据显示债券收益率与主要股指出现调整，投资者关注央行最新表态。","why_important":"利率预期变化会影响企业融资成本、汇率和风险资产估值。","category":"finance","importance":{"score":81,"level":"high"},"source_count":1,"source_names":["示例财经来源A"],"published_at":"2026-01-15T04:15:00Z"},
+      {"id":"rss:sample-ai:model-001","title_cn":"【样例】研究机构发布高效多模态模型","summary":"样例模型以更低推理成本处理文本与图像任务，并公布了评测方法和技术报告。","why_important":"成本下降可能扩大多模态应用范围，但真实效果仍需独立评测验证。","category":"tech_ai","importance":{"score":79,"level":"medium"},"source_count":1,"source_names":["示例科技来源A"],"published_at":"2026-01-15T05:40:00Z"}
+    ]
+  },
+  "news": [
+    {
+      "id":"rss:sample-china:policy-001","title_cn":"【样例】中国发布新一轮产业支持安排","title_original":"Sample: China Announces an Industrial Support Package","summary":"样例政策提出扩大先进制造与绿色产业支持范围，并明确后续实施时间表。","why_important":"政策可能影响重点行业投资节奏，也是观察宏观政策取向的重要信号。","category":"china","importance":{"score":92,"level":"high"},"published_at":"2026-01-15T01:10:00Z","updated_at":"2026-01-15T01:35:00Z","sources":[{"name":"示例中国来源A","url":"https://example.com/sample/china-policy-a","published_at":"2026-01-15T01:10:00Z"},{"name":"示例中国来源B","url":"https://example.org/sample/china-policy-b","published_at":"2026-01-15T01:25:00Z"}],"primary_source":"示例中国来源A","primary_url":"https://example.com/sample/china-policy-a"
+    },
+    {
+      "id":"rss:sample-us:economy-001","title_cn":"【样例】美国公布最新通胀与就业指标","title_original":"Sample: New US Inflation and Employment Data Released","summary":"样例数据显示通胀继续放缓，就业市场保持韧性，市场重新评估未来政策路径。","why_important":"两项指标会直接影响利率预期，并通过美元与全球资产价格产生外溢影响。","category":"us","importance":{"score":88,"level":"high"},"published_at":"2026-01-15T02:20:00Z","updated_at":"2026-01-15T02:50:00Z","sources":[{"name":"示例美国来源A","url":"https://example.com/sample/us-economy-a","published_at":"2026-01-15T02:20:00Z"},{"name":"示例财经来源A","url":"https://example.net/sample/us-economy-b","published_at":"2026-01-15T02:35:00Z"}],"primary_source":"示例美国来源A","primary_url":"https://example.com/sample/us-economy-a"
+    },
+    {
+      "id":"gdelt:sample:diplomacy-001","title_cn":"【样例】多国就区域安全建立新磋商机制","title_original":"Sample: Countries Establish a Regional Security Dialogue","summary":"参与方同意建立定期沟通机制，以降低误判风险并协调后续外交议程。","why_important":"持续沟通有助于降低局势升级概率，并可能影响跨境贸易和能源运输预期。","category":"international","importance":{"score":84,"level":"high"},"published_at":"2026-01-15T03:00:00Z","updated_at":null,"sources":[{"name":"示例国际来源A","url":"https://example.com/sample/regional-dialogue","published_at":"2026-01-15T03:00:00Z"}],"primary_source":"示例国际来源A","primary_url":"https://example.com/sample/regional-dialogue"
+    },
+    {
+      "id":"openbb:sample:macro-001","title_cn":"【样例】全球主要市场调整利率预期","title_original":"Sample: Global Markets Reprice Interest-Rate Outlook","summary":"样例市场数据显示债券收益率与主要股指出现调整，投资者关注央行最新表态。","why_important":"利率预期变化会影响企业融资成本、汇率和风险资产估值。","category":"finance","importance":{"score":81,"level":"high"},"published_at":"2026-01-15T04:15:00Z","updated_at":null,"sources":[{"name":"示例财经来源A","url":"https://example.com/sample/rate-outlook","published_at":"2026-01-15T04:15:00Z"}],"primary_source":"示例财经来源A","primary_url":"https://example.com/sample/rate-outlook"
+    },
+    {
+      "id":"rss:sample-ai:model-001","title_cn":"【样例】研究机构发布高效多模态模型","title_original":"Sample: Research Lab Releases an Efficient Multimodal Model","summary":"样例模型以更低推理成本处理文本与图像任务，并公布了评测方法和技术报告。","why_important":"成本下降可能扩大多模态应用范围，但真实效果仍需独立评测验证。","category":"tech_ai","importance":{"score":79,"level":"medium"},"published_at":"2026-01-15T05:40:00Z","updated_at":"2026-01-15T06:00:00Z","sources":[{"name":"示例科技来源A","url":"https://example.com/sample/multimodal-model","published_at":"2026-01-15T05:40:00Z"}],"primary_source":"示例科技来源A","primary_url":"https://example.com/sample/multimodal-model"
+    },
+    {
+      "id":"google_news:sample:trade-001","title_cn":"【样例】多方公布新的贸易协调安排","title_original":"Sample: New Trade Coordination Measures Announced","summary":"样例安排聚焦关键商品通关和供应链信息共享，相关细则将在后续会议中确认。","why_important":"执行效果可能影响区域供应链效率和部分行业成本。","category":"international","importance":{"score":68,"level":"medium"},"published_at":"2026-01-15T06:10:00Z","updated_at":null,"sources":[{"name":"示例国际来源B","url":"https://example.org/sample/trade-coordination","published_at":"2026-01-15T06:10:00Z"}],"primary_source":"示例国际来源B","primary_url":"https://example.org/sample/trade-coordination"
+    },
+    {
+      "id":"rss:sample-china:local-001","title_cn":"【样例】重点城市公布消费支持计划","title_original":null,"summary":"样例计划覆盖绿色家电和公共服务消费，具体执行额度与期限由地方后续公布。","why_important":null,"category":"china","importance":{"score":55,"level":"medium"},"published_at":"2026-01-15T07:05:00Z","updated_at":null,"sources":[{"name":"示例中国来源C","url":"https://example.cn/sample/consumption-plan","published_at":null}],"primary_source":"示例中国来源C","primary_url":"https://example.cn/sample/consumption-plan"
+    }
+  ],
+  "categories": [
+    {"id":"china","display_name":"中国"},
+    {"id":"us","display_name":"美国"},
+    {"id":"international","display_name":"国际"},
+    {"id":"finance","display_name":"财经"},
+    {"id":"tech_ai","display_name":"科技 / AI"}
+  ],
+  "market": null
+}

@@ -1,6 +1,6 @@
 {
   "id": "finance-news",
-  "name": "Financial News",
+  "name": "Financial Markets",
   "display_names": {
     "zh": "财经新闻"
   },
@@ -8,7 +8,7 @@
   "analysis": "analysis.md",
   "content": {
     "analysis_max_chars": 4000,
-    "enrichment_max_chars": 8000,
+    "enrichment_max_chars": 6000,
     "sampling": "prefix"
   },
   "enrichment": {
@@ -21,14 +21,9 @@
         "primary": true
       },
       {
-        "id": "background",
-        "type": "section",
-        "tools": ["web_search"]
-      },
-      {
         "id": "impact",
         "type": "section",
-        "tools": ["web_search"],
+        "tools": [],
         "optional": true
       }
     ]

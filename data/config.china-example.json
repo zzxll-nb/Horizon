@@ -1,0 +1,37 @@
+{
+  "ai": {"provider":"deepseek","model":"deepseek-chat","base_url":"https://api.deepseek.com","api_key_env":"DEEPSEEK_API_KEY","temperature":0.2,"max_tokens":4096,"throttle_sec":0,"analysis_concurrency":3,"enrichment_concurrency":3,"languages":["zh"]},
+  "processing": {
+    "profiles_dir":"profiles",
+    "default_profile":"china-news",
+    "profile_settings": {
+      "china-news":{"threshold":7.0,"topic_dedup":true},
+      "us-news":{"threshold":7.0,"topic_dedup":true},
+      "international-news":{"threshold":7.0,"topic_dedup":true},
+      "finance-news":{"threshold":7.5,"topic_dedup":true},
+      "tech-ai-news":{"threshold":7.0,"topic_dedup":true}
+    }
+  },
+  "display":{"icon_style":"emoji"},
+  "sources": {
+    "github":[],
+    "hackernews":{"enabled":false},
+    "reddit":{"enabled":false},
+    "telegram":{"enabled":false},
+    "twitter":{"enabled":false},
+    "ossinsight":{"enabled":false},
+    "rss":[
+      {"name":"中国政府网","url":"https://www.gov.cn/pushinfo/v150203/pushinfo.xml","enabled":true,"category":"china","profile":"china-news","content_extractor":"trafilatura"},
+      {"name":"纽约时报美国","url":"https://rss.nytimes.com/services/xml/rss/nyt/US.xml","enabled":true,"category":"us","profile":"us-news","content_extractor":"trafilatura"},
+      {"name":"纽约时报国际","url":"https://rss.nytimes.com/services/xml/rss/nyt/World.xml","enabled":true,"category":"international","profile":"international-news","content_extractor":"trafilatura"},
+      {"name":"CNBC Finance","url":"https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10000664","enabled":true,"category":"finance","profile":"finance-news","content_extractor":"trafilatura"},
+      {"name":"OpenAI Blog","url":"https://openai.com/blog/rss.xml","enabled":true,"category":"tech-ai","profile":"tech-ai-news","content_extractor":"trafilatura"}
+    ],
+    "gdelt":{"enabled":true,"query":"China OR United States OR international relations OR global economy OR artificial intelligence","mode":"ArtList","max_records":30,"timespan":"24h","language":null,"country":null,"category":"global-news","profile":"auto"},
+    "google_news":{"enabled":true,"query":"中国 政策 OR 美国 政治 OR 国际 冲突 OR 全球 市场 OR 人工智能","language":"zh-CN","country":"CN","ceid":"CN:zh-Hans","max_results":30,"category":"global-news","profile":"auto"},
+    "openbb":{"enabled":true,"fetch_filings":false,"filings_provider":"sec","watchlists":[{"name":"macro-tech","enabled":true,"provider":"yfinance","fetch_limit":12,"category":"finance","symbols":["SPY","QQQ","TLT","GLD","USO","BABA","TSM","NVDA"],"profile":"finance-news"}]}
+  },
+  "collection":{"time_window_hours":24},
+  "digest":{"max_items":8,"profile_order":["china-news","us-news","international-news","finance-news","tech-ai-news"],"category_groups":{},"default_group":"other","default_group_limit":null},
+  "webhook":{"enabled":false,"url_env":"HORIZON_WEBHOOK_URL","delivery":"summary","overview_position":"first","platform":"generic","layout":"markdown","fallback_layout":"markdown","languages":["zh"],"headers":""},
+  "wechat":{"enabled":false,"languages":["zh"],"chunk_size":4000}
+}

@@ -40,6 +40,8 @@ ENV/
 data/config.json
 data/seen.json
 data/summaries/*.md
+data/dashboard/*.json
+data/market/*.json
 data/subscribers.json
 data/mcp.secrets.json
 data/mcp-secrets.json

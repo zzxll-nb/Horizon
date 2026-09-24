@@ -1,7 +1,3 @@
-# Financial news profile
+# 财经
 
-Use this profile when an item's primary value is understanding money, markets, companies, or economic policy rather than a technology itself.
-
-Typical items include macroeconomic data, interest rates, inflation, employment, fiscal policy, stocks, bonds, currencies, commodities, company earnings, financing, mergers and acquisitions, valuations, financial regulation, and industry policy with clear economic consequences.
-
-For technology companies, route earnings, financing, valuation, acquisitions, and material business changes here. Route product releases, research results, software updates, security incidents, and engineering developments to the technology news profile. Do not route routine price movements, unsupported market rumors, promotional investment content, or generic personal-finance advice here.
+用于宏观数据、利率、通胀、财政政策、市场、公司财报、融资并购、货币与大宗商品，以及有明确经济后果的监管。科技公司的财报、估值和融资归入本类；产品和技术进展归入科技 / AI。排除日常涨跌、传闻、荐股和理财内容。

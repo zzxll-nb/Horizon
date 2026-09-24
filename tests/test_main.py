@@ -108,3 +108,32 @@ def test_log_level_flag_is_forwarded_to_configure_logging(monkeypatch, tmp_path)
 
     # The first call is the pre-argparse default; the second reflects the CLI flag.
     assert logging_calls[-1] == "DEBUG"
+
+
+def test_skip_daily_summary_flag_runs_incremental_mode(monkeypatch):
+    calls = []
+
+    class RecordingStorage:
+        def __init__(self, data_dir, config_path):
+            pass
+
+        def load_config(self):
+            return SimpleNamespace(display=SimpleNamespace(icon_style="emoji"))
+
+    class RecordingOrchestrator:
+        def __init__(self, config, storage, console):
+            pass
+
+        async def run(self, force_hours, generate_daily_summary):
+            calls.append((force_hours, generate_daily_summary))
+
+    monkeypatch.setattr(main_module, "StorageManager", RecordingStorage)
+    monkeypatch.setattr(main_module, "HorizonOrchestrator", RecordingOrchestrator)
+    monkeypatch.setattr(main_module, "configure_logging", lambda console, level=None: None)
+    monkeypatch.setattr(main_module, "print_banner", lambda: None)
+    monkeypatch.setattr(main_module.console, "print", lambda *args, **kwargs: None)
+    monkeypatch.setattr("sys.argv", ["horizon", "--hours", "1", "--skip-daily-summary"])
+
+    main_module.main()
+
+    assert calls == [(1, False)]
