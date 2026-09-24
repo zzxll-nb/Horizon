@@ -284,6 +284,12 @@ class HorizonOrchestrator:
                     f"{len(all_items) - len(merged_items)} cross-source duplicates "
                     f"→ {len(merged_items)} unique items\n"
                 )
+            duplicate_counts = getattr(self, "last_cross_source_duplicate_counts", {})
+            for source_name, count in sorted(duplicate_counts.items()):
+                self.console.print(
+                    f"   [dim]source health: {source_name}: duplicates={count} "
+                    "(cross-source)[/dim]"
+                )
 
             # 4. Analyze with AI
             analyzed_items = await self.analyze_items(merged_items)
@@ -680,6 +686,20 @@ class HorizonOrchestrator:
 
         self.console.print(f"   Found {len(items)} items from {name}")
 
+        source_health = getattr(scraper, "source_health", None)
+        if isinstance(source_health, dict):
+            for source_name, health in sorted(source_health.items()):
+                status = health.get("status", "unknown")
+                fetched = health.get("fetched_count", 0)
+                duplicates = health.get("duplicate_count", 0)
+                message = (
+                    f"      {self.icons['detail']} {source_name}: "
+                    f"status={status}, fetched={fetched}, duplicates={duplicates}"
+                )
+                if health.get("error"):
+                    message += f", error={health['error']}"
+                self.console.print(f"[dim]{message}[/dim]")
+
         # Show per-sub-source breakdown when there are multiple sub-sources
         sub_counts: Dict[str, int] = defaultdict(int)
         for item in items:
@@ -732,6 +752,7 @@ class HorizonOrchestrator:
             List[ContentItem]: Deduplicated items
         """
         # Group by normalized URL
+        duplicate_counts: Dict[str, int] = defaultdict(int)
         url_groups: Dict[tuple[object, ...], List[ContentItem]] = {}
         for item in items:
             if isinstance(item.profile, list):
@@ -753,6 +774,15 @@ class HorizonOrchestrator:
             # Pick the item with the richest content as primary
             primary = max(group_copies, key=lambda x: len(x.content or ""))
 
+            # Count every item removed by the URL merge against its configured
+            # feed/source. This is diagnostic only and does not affect merging.
+            primary_index = max(
+                range(len(group)), key=lambda i: len(group[i].content or "")
+            )
+            for index, item in enumerate(group):
+                if index != primary_index:
+                    duplicate_counts[self._sub_source_label(item)] += 1
+
             # Merge metadata and source info from other items
             all_sources = []
             for item in group_copies:
@@ -771,6 +801,7 @@ class HorizonOrchestrator:
             primary.metadata["merged_sources"] = all_sources
             merged.append(primary)
 
+        self.last_cross_source_duplicate_counts = dict(duplicate_counts)
         return merged
 
     async def merge_topic_duplicates(

@@ -15,6 +15,22 @@ EXPECTED_PROFILES = {
     "tech-ai-news",
 }
 
+EXPECTED_RSS_SOURCES = {
+    "Federal Reserve Press Releases",
+    "Federal Reserve Monetary Policy",
+    "BLS Latest Numbers",
+    "SEC Press Releases",
+    "EIA Today in Energy",
+    "EIA Press Releases",
+    "CNBC Finance",
+    "New York Times Business",
+    "MarketWatch MarketPulse",
+    "NVIDIA Press Releases",
+    "AMD Press Releases",
+    "OpenAI Blog",
+    "AWS What's New",
+}
+
 
 def test_production_config_uses_market_focused_profiles_and_sources() -> None:
     config = StorageManager(config_path=str(CONFIG_PATH)).load_config()
@@ -32,6 +48,9 @@ def test_production_config_uses_market_focused_profiles_and_sources() -> None:
     assert config.sources.gdelt.timespan is None
     assert set(config.sources.gdelt.profile or []) == EXPECTED_PROFILES
     assert set(config.sources.google_news.profile or []) == EXPECTED_PROFILES
+    assert {source.name for source in config.sources.rss} == EXPECTED_RSS_SOURCES
+    assert len({str(source.url) for source in config.sources.rss}) == len(config.sources.rss)
+    assert all(source.enabled for source in config.sources.rss)
 
     source_text = json.dumps(config.sources.model_dump(mode="json"), ensure_ascii=False)
     for forbidden in (

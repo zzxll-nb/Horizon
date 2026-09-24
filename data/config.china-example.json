@@ -21,9 +21,18 @@
     "ossinsight":{"enabled":false},
     "rss":[
       {"name":"Federal Reserve Press Releases","url":"https://www.federalreserve.gov/feeds/press_all.xml","enabled":true,"category":"macro","profile":"macro-news","content_extractor":"trafilatura"},
+      {"name":"Federal Reserve Monetary Policy","url":"https://www.federalreserve.gov/feeds/press_monetary.xml","enabled":true,"category":"macro","profile":"macro-news"},
+      {"name":"BLS Latest Numbers","url":"https://www.bls.gov/feed/bls_latest.rss","enabled":true,"category":"macro","profile":"macro-news"},
+      {"name":"SEC Press Releases","url":"https://www.sec.gov/news/pressreleases.rss","enabled":true,"category":"finance","profile":"finance-news"},
+      {"name":"EIA Today in Energy","url":"https://www.eia.gov/rss/todayinenergy.xml","enabled":true,"category":"markets","profile":"markets-news"},
+      {"name":"EIA Press Releases","url":"https://www.eia.gov/rss/press_rss.xml","enabled":true,"category":"markets","profile":"markets-news"},
       {"name":"CNBC Finance","url":"https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10000664","enabled":true,"category":"markets","profile":"markets-news","content_extractor":"trafilatura"},
       {"name":"New York Times Business","url":"https://rss.nytimes.com/services/xml/rss/nyt/Business.xml","enabled":true,"category":"finance","profile":"finance-news","content_extractor":"trafilatura"},
-      {"name":"OpenAI Blog","url":"https://openai.com/blog/rss.xml","enabled":true,"category":"tech_ai","profile":"tech-ai-news","content_extractor":"trafilatura"}
+      {"name":"MarketWatch MarketPulse","url":"https://feeds.marketwatch.com/marketwatch/marketpulse/","enabled":true,"category":"markets","profile":"markets-news"},
+      {"name":"NVIDIA Press Releases","url":"https://nvidianews.nvidia.com/cats/press_release.xml","enabled":true,"category":"tech_ai","profile":"tech-ai-news"},
+      {"name":"AMD Press Releases","url":"https://ir.amd.com/news-events/press-releases/rss","enabled":true,"category":"tech_ai","profile":"tech-ai-news"},
+      {"name":"OpenAI Blog","url":"https://openai.com/blog/rss.xml","enabled":true,"category":"tech_ai","profile":"tech-ai-news","content_extractor":"trafilatura"},
+      {"name":"AWS What's New","url":"https://aws.amazon.com/about-aws/whats-new/recent/feed/","enabled":true,"category":"tech_ai","profile":"tech-ai-news"}
     ],
     "gdelt":{"enabled":true,"query":"\"financial markets\" OR stocks OR bonds OR \"Federal Reserve\" OR inflation OR employment OR earnings OR \"mergers and acquisitions\" OR IPO OR commodities OR oil OR gold OR \"Treasury yields\" OR dollar OR Bitcoin OR artificial intelligence OR semiconductors OR \"AI capital spending\" OR \"data centers\" OR \"power demand\"","mode":"ArtList","max_records":30,"timespan":null,"language":"english","country":null,"category":"markets","profile":["markets-news","finance-news","investing-news","macro-news","tech-ai-news"]},
     "google_news":{"enabled":true,"query":"financial markets OR stocks OR bonds OR Federal Reserve OR inflation OR earnings OR M&A OR IPO OR oil OR gold OR Treasury yields OR Bitcoin OR artificial intelligence OR semiconductors OR AI data centers","language":"en-US","country":"US","ceid":"US:en","max_results":30,"category":"markets","profile":["markets-news","finance-news","investing-news","macro-news","tech-ai-news"]},

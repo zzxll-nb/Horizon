@@ -45,6 +45,29 @@ def test_normalizes_host_case_default_ports_path_trailing_slash_and_fragment() -
     assert result[0].metadata["merged_sources"] == ["rss", "reddit"]
 
 
+def test_records_duplicate_counts_by_configured_sub_source() -> None:
+    orchestrator = object.__new__(HorizonOrchestrator)
+    items = [
+        item(
+            "rss-feed",
+            "https://example.com/story",
+            metadata={"feed_name": "Primary feed"},
+        ),
+        item(
+            "google-item",
+            "https://example.com/story/",
+            source_type=SourceType.GOOGLE_NEWS,
+            metadata={"gn_query": "markets"},
+            content="richer article text",
+        ),
+    ]
+
+    result = orchestrator.merge_cross_source_duplicates(items)
+
+    assert len(result) == 1
+    assert orchestrator.last_cross_source_duplicate_counts == {"Primary feed": 1}
+
+
 def test_preserves_scheme_and_non_default_port_distinctions() -> None:
     items = [
         item("https", "https://example.com/story"),

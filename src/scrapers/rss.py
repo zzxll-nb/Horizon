@@ -17,6 +17,11 @@ from ..models import ContentItem, SourceType, RSSSourceConfig
 
 logger = logging.getLogger(__name__)
 
+RSS_REQUEST_HEADERS = {
+    "User-Agent": "Horizon RSS Reader (public feed validation)",
+    "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml, */*;q=0.8",
+}
+
 
 class RSSScraper(BaseScraper):
     """Scraper for RSS/Atom feeds."""
@@ -36,6 +41,9 @@ class RSSScraper(BaseScraper):
         """
         super().__init__({"sources": sources}, http_client)
         self._extractors = extractors
+        # Retained for the orchestrator's source-health diagnostics.  A failed
+        # feed is intentionally isolated from the other feeds in this scraper.
+        self.source_health: dict[str, dict[str, object]] = {}
 
     async def fetch(self, since: datetime) -> List[ContentItem]:
         """Fetch RSS feed items.
@@ -47,6 +55,7 @@ class RSSScraper(BaseScraper):
             List[ContentItem]: Fetched content items
         """
         items = []
+        self.source_health = {}
         sources = self.config["sources"]
 
         for source in sources:
@@ -81,7 +90,11 @@ class RSSScraper(BaseScraper):
             )
 
             # Fetch feed content
-            response = await self.client.get(feed_url, follow_redirects=True)
+            response = await self.client.get(
+                feed_url,
+                follow_redirects=True,
+                headers=RSS_REQUEST_HEADERS,
+            )
             response.raise_for_status()
 
             # Parse feed
@@ -130,9 +143,32 @@ class RSSScraper(BaseScraper):
                 items.append(item)
 
         except httpx.HTTPError as e:
-            logger.warning("Error fetching RSS feed %s: %s", source.name, e)
+            error = f"{type(e).__name__}: {e}"
+            self.source_health[source.name] = {
+                "status": "failure",
+                "fetched_count": 0,
+                "duplicate_count": 0,
+                "error": error,
+            }
+            logger.warning("Error fetching RSS feed %s: %s", source.name, error)
         except Exception as e:
-            logger.warning("Error parsing RSS feed %s: %s", source.name, e)
+            error = f"{type(e).__name__}: {e}"
+            self.source_health[source.name] = {
+                "status": "failure",
+                "fetched_count": 0,
+                "duplicate_count": 0,
+                "error": error,
+            }
+            logger.warning("Error parsing RSS feed %s: %s", source.name, error)
+        else:
+            self.source_health[source.name] = {
+                "status": "success" if items else "empty",
+                "fetched_count": len(items),
+                # Cross-source duplicates are calculated after every scraper
+                # has completed; this is the pre-merge count.
+                "duplicate_count": 0,
+                "error": None,
+            }
 
         return items
 

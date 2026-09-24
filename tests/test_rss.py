@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
 
+import httpx
+
 from src.models import RSSSourceConfig
 from src.scrapers.rss import RSSScraper
 
@@ -45,6 +47,14 @@ def test_rss_ids_are_deterministic() -> None:
     assert first == second
     assert first == "rss:example.com_feed.xml:5e2d5d1e58e94d76"
     assert first_item.profile == "rss-profile"
+    client.get.assert_awaited_with(
+        "https://example.com/feed.xml",
+        follow_redirects=True,
+        headers={
+            "User-Agent": "Horizon RSS Reader (public feed validation)",
+            "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml, */*;q=0.8",
+        },
+    )
 
 
 def test_timezone_less_pubdate_is_treated_as_utc() -> None:
@@ -107,3 +117,31 @@ def test_unknown_extractor_name_ignored() -> None:
 
     assert len(items) == 1
     assert items[0].content == "Short summary from feed."
+
+
+def test_feed_failure_is_isolated_and_recorded_in_source_health() -> None:
+    response = MagicMock()
+    response.text = _FEED
+    response.raise_for_status.return_value = None
+    client = AsyncMock()
+    client.get.side_effect = [response, httpx.ConnectError("offline")]
+    sources = [
+        RSSSourceConfig(name="Working feed", url="https://example.com/working.xml"),
+        RSSSourceConfig(name="Unavailable feed", url="https://example.com/down.xml"),
+    ]
+    scraper = RSSScraper(sources, client)
+
+    items = asyncio.run(scraper.fetch(_SINCE))
+
+    assert len(items) == 1
+    assert scraper.source_health["Working feed"] == {
+        "status": "success",
+        "fetched_count": 1,
+        "duplicate_count": 0,
+        "error": None,
+    }
+    failed = scraper.source_health["Unavailable feed"]
+    assert failed["status"] == "failure"
+    assert failed["fetched_count"] == 0
+    assert failed["duplicate_count"] == 0
+    assert "ConnectError" in str(failed["error"])
