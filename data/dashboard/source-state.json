@@ -13,7 +13,7 @@
       "clustered_count": 0,
       "source_name": "Federal Reserve Press Releases",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "Federal Reserve Monetary Policy": {
       "status": "empty",
@@ -28,7 +28,7 @@
       "clustered_count": 0,
       "source_name": "Federal Reserve Monetary Policy",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "BEA News Releases": {
       "status": "healthy",
@@ -43,7 +43,7 @@
       "clustered_count": 0,
       "source_name": "BEA News Releases",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "SEC Press Releases": {
       "status": "empty",
@@ -58,7 +58,7 @@
       "clustered_count": 0,
       "source_name": "SEC Press Releases",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "EIA Today in Energy": {
       "status": "empty",
@@ -73,7 +73,7 @@
       "clustered_count": 0,
       "source_name": "EIA Today in Energy",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "EIA Press Releases": {
       "status": "empty",
@@ -88,22 +88,22 @@
       "clustered_count": 0,
       "source_name": "EIA Press Releases",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "CNBC Finance": {
       "status": "healthy",
-      "fetched_count": 3,
+      "fetched_count": 4,
       "duplicate_count": 0,
       "source_tier": 2,
       "http_status": 200,
       "parser_error": null,
       "error": null,
-      "accepted_count": 3,
+      "accepted_count": 4,
       "duplicates": 0,
       "clustered_count": 0,
       "source_name": "CNBC Finance",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "CNBC Investing": {
       "status": "healthy",
@@ -118,7 +118,7 @@
       "clustered_count": 0,
       "source_name": "CNBC Investing",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "CNBC Technology": {
       "status": "healthy",
@@ -133,7 +133,7 @@
       "clustered_count": 0,
       "source_name": "CNBC Technology",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "New York Times Business": {
       "status": "healthy",
@@ -148,7 +148,7 @@
       "clustered_count": 0,
       "source_name": "New York Times Business",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "MarketWatch MarketPulse": {
       "status": "empty",
@@ -163,7 +163,7 @@
       "clustered_count": 0,
       "source_name": "MarketWatch MarketPulse",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "NVIDIA Press Releases": {
       "status": "empty",
@@ -178,7 +178,7 @@
       "clustered_count": 0,
       "source_name": "NVIDIA Press Releases",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "AMD Press Releases": {
       "status": "empty",
@@ -193,7 +193,7 @@
       "clustered_count": 0,
       "source_name": "AMD Press Releases",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "OpenAI Blog": {
       "status": "empty",
@@ -208,7 +208,7 @@
       "clustered_count": 0,
       "source_name": "OpenAI Blog",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "AWS What's New": {
       "status": "healthy",
@@ -223,7 +223,7 @@
       "clustered_count": 0,
       "source_name": "AWS What's New",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "Microsoft Source": {
       "status": "empty",
@@ -238,7 +238,7 @@
       "clustered_count": 0,
       "source_name": "Microsoft Source",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "Google DeepMind": {
       "status": "healthy",
@@ -253,7 +253,7 @@
       "clustered_count": 0,
       "source_name": "Google DeepMind",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "BLS Public Data API": {
       "status": "empty",
@@ -268,7 +268,7 @@
       "source_tier": 3,
       "parser_error": null,
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "U.S. Treasury Releases": {
       "status": "empty",
@@ -283,7 +283,7 @@
       "source_tier": 3,
       "parser_error": null,
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "SEC EDGAR Watch Universe": {
       "status": "empty",
@@ -298,12 +298,12 @@
       "source_tier": 3,
       "parser_error": null,
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "OpenBB/markets-investing-ai": {
       "status": "healthy",
       "source_tier": 3,
-      "fetched_count": 16,
+      "fetched_count": 14,
       "duplicate_count": 0,
       "http_status": 200,
       "parser_error": null,
@@ -313,21 +313,21 @@
       "clustered_count": 0,
       "source_name": "OpenBB/markets-investing-ai",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     },
     "GDELT": {
-      "status": "degraded",
+      "status": "failed",
       "source_tier": 3,
       "fetched_count": 0,
       "duplicate_count": 0,
-      "http_status": 200,
-      "parser_error": "Expecting value: line 1 column 1 (char 0)",
-      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": 429,
+      "parser_error": "Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22financial+markets%22+OR+stocks+OR+bonds+OR+%22Federal+Reserve%22+OR+inflation+OR+employment+OR+earnings+OR+%22mergers+and+acquisitions%22+OR+IPO+OR+commodities+OR+oil+OR+gold+OR+%22Treasury+yields%22+OR+dollar+OR+Bitcoin+OR+artificial+intelligence+OR+semiconductors+OR+%22AI+capital+spending%22+OR+%22data+centers%22+OR+%22power+demand%22+sourcelang%3Aenglish&mode=ArtList&format=json&maxrecords=30&sort=datedesc&startdatetime=20260924094243&enddatetime=20260925004243'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429",
+      "error": "Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22financial+markets%22+OR+stocks+OR+bonds+OR+%22Federal+Reserve%22+OR+inflation+OR+employment+OR+earnings+OR+%22mergers+and+acquisitions%22+OR+IPO+OR+commodities+OR+oil+OR+gold+OR+%22Treasury+yields%22+OR+dollar+OR+Bitcoin+OR+artificial+intelligence+OR+semiconductors+OR+%22AI+capital+spending%22+OR+%22data+centers%22+OR+%22power+demand%22+sourcelang%3Aenglish&mode=ArtList&format=json&maxrecords=30&sort=datedesc&startdatetime=20260924094243&enddatetime=20260925004243'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429",
       "accepted_count": 0,
       "duplicates": 0,
       "clustered_count": 0,
       "source_name": "GDELT",
-      "consecutive_failures": 0,
+      "consecutive_failures": 1,
       "last_success": "2026-09-25T00:28:40.559872Z"
     },
     "Google News": {
@@ -338,12 +338,12 @@
       "http_status": 200,
       "parser_error": null,
       "error": null,
-      "accepted_count": 24,
+      "accepted_count": 23,
       "duplicates": 0,
-      "clustered_count": 6,
+      "clustered_count": 7,
       "source_name": "Google News",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T00:28:40.559872Z"
+      "last_success": "2026-09-25T00:43:09.780700Z"
     }
   },
   "bls_series": {
