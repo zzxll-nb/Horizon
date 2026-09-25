@@ -46,12 +46,7 @@ export function Sidebar({ categories, activeCategory, mobileOpen, onClose, onSel
             <span className="grid size-9 place-items-center rounded-xl bg-orange-50 text-orange-600">
               <Bot size={19} strokeWidth={2.2} />
             </span>
-            <div>
-              <div className="text-[15px] font-semibold tracking-tight text-zinc-950">AI 全球情报</div>
-              <div className="mt-0.5 flex items-center gap-1.5 text-xs text-zinc-400">
-                <span className="size-1.5 rounded-full bg-[#FF7A00]" />工作台
-              </div>
-            </div>
+            <div className="text-[15px] font-semibold tracking-tight text-zinc-950">赵哲咺工作台</div>
           </div>
           <button className="rounded-lg p-2 text-zinc-500 hover:bg-zinc-100 lg:hidden" aria-label="关闭导航" onClick={onClose}>
             <X size={18} />
