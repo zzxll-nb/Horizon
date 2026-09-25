@@ -16,7 +16,7 @@ from __future__ import annotations
 import asyncio
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import httpx
 import pytest
@@ -75,11 +75,40 @@ def _news_row(
 
 
 class TestFetchGuards:
-    def test_returns_empty_when_obb_not_installed(self):
-        scraper = _make_scraper(_cfg(), obb=None)
+    def test_unsupported_provider_returns_empty_when_obb_not_installed(self):
+        scraper = _make_scraper(
+            _cfg(watchlists=[OpenBBWatchlist(name="paid", symbols=["AAPL"], provider="fmp")]),
+            obb=None,
+        )
         since = datetime.now(timezone.utc) - timedelta(days=1)
         result = asyncio.run(scraper.fetch(since))
         assert result == []
+
+    def test_yfinance_uses_lightweight_adapter_when_sdk_missing(self):
+        now = datetime.now(timezone.utc)
+        client = AsyncMock()
+        response = MagicMock()
+        response.status_code = 200
+        response.raise_for_status.return_value = None
+        response.json.return_value = {
+            "news": [
+                {
+                    "title": "Nvidia updates guidance",
+                    "link": "https://finance.yahoo.com/news/nvidia-guidance",
+                    "providerPublishTime": int(now.timestamp()),
+                    "publisher": "Reuters",
+                }
+            ]
+        }
+        client.get.return_value = response
+        scraper = OpenBBScraper(_cfg(), client)
+        scraper._obb = None
+
+        result = asyncio.run(scraper.fetch(now - timedelta(hours=1)))
+
+        assert len(result) == 1
+        assert result[0].metadata["provider"] == "yfinance-direct"
+        assert result[0].metadata["source_tier"] == 3
 
     def test_returns_empty_when_disabled(self):
         obb = MagicMock()

@@ -174,7 +174,7 @@ cp data/config.example.json data/config.json  # Customize your sources
 
 ```bash
 python3 -m pip install -e .
-cp data/config.china-example.json data/config.json
+cp data/config.market-intelligence.json data/config.json
 cp .env.example .env
 # 在 .env 中设置 OPENAI_API_KEY
 horizon --hours 24

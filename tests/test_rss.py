@@ -134,12 +134,12 @@ def test_feed_failure_is_isolated_and_recorded_in_source_health() -> None:
     items = asyncio.run(scraper.fetch(_SINCE))
 
     assert len(items) == 1
-    assert scraper.source_health["Working feed"] == {
-        "status": "success",
-        "fetched_count": 1,
-        "duplicate_count": 0,
-        "error": None,
-    }
+    working = scraper.source_health["Working feed"]
+    assert working["status"] == "success"
+    assert working["fetched_count"] == 1
+    assert working["duplicate_count"] == 0
+    assert working["source_tier"] == 2
+    assert working["error"] is None
     failed = scraper.source_health["Unavailable feed"]
     assert failed["status"] == "failure"
     assert failed["fetched_count"] == 0

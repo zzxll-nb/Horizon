@@ -17,6 +17,15 @@ _VOLATILE_METADATA = {
     "favorite_count",
     "fetched_at",
     "merged_sources",
+    "alternate_sources",
+    "corroborating_snippets",
+    "corroborating_urls",
+    "clustered_count",
+    "event_cluster_id",
+    "event_member_ids",
+    "event_fingerprint",
+    "source_count",
+    "source_tiers",
     "reply_count",
     "retweet_count",
     "score",
@@ -50,7 +59,12 @@ def apply_cached_analysis(item: ContentItem, cache: dict[str, Any]) -> bool:
     """Restore compatible artifacts when the underlying news item is unchanged."""
     if item.processing is None:
         return False
-    entry = cache.get("items", {}).get(item.id)
+    entries = cache.get("items", {})
+    candidate_ids = [item.id, *item.metadata.get("event_member_ids", [])]
+    entry = next(
+        (entries.get(candidate_id) for candidate_id in candidate_ids if entries.get(candidate_id)),
+        None,
+    )
     if not isinstance(entry, dict):
         return False
     if cache.get("schema_version") != CACHE_SCHEMA_VERSION:
@@ -98,6 +112,8 @@ def update_analysis_cache(
                 for language, artifact in item.processing.artifacts.items()
             },
         }
+        for alias in item.metadata.get("event_member_ids", []):
+            entries[str(alias)] = entries[item.id]
     if len(entries) > max_entries:
         entries = dict(list(entries.items())[-max_entries:])
     return {"schema_version": CACHE_SCHEMA_VERSION, "items": entries}

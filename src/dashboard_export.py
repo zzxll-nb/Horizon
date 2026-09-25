@@ -132,6 +132,21 @@ def _sources(item: ContentItem) -> list[dict[str, str | None]]:
         if source_name in {item.source_type.value, primary_name}:
             continue
         sources.append({"name": source_name, "url": url, "published_at": published_at})
+    for alternate in item.metadata.get("alternate_sources", []):
+        alternate_url = str(alternate.get("url") or "")
+        alternate_name = str(alternate.get("name") or "Unknown")
+        if not alternate_url or any(
+            source["url"] == alternate_url and source["name"] == alternate_name
+            for source in sources
+        ):
+            continue
+        sources.append(
+            {
+                "name": alternate_name,
+                "url": alternate_url,
+                "published_at": _optional_utc_iso(alternate.get("published_at")),
+            }
+        )
     return sources
 
 

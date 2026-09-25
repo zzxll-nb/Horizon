@@ -7,6 +7,9 @@ Horizon run, so the orchestrator can print a summary at the end.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from contextlib import contextmanager
+from contextvars import ContextVar
+from typing import Iterator
 from typing import Dict
 
 
@@ -25,6 +28,7 @@ class TokenUsageSnapshot:
     total_input_tokens: int
     total_output_tokens: int
     per_provider: Dict[str, ProviderUsage] = field(default_factory=dict)
+    per_phase: Dict[str, ProviderUsage] = field(default_factory=dict)
 
     @property
     def total_tokens(self) -> int:
@@ -32,6 +36,18 @@ class TokenUsageSnapshot:
 
 
 _provider_usage: Dict[str, ProviderUsage] = {}
+_phase_usage: Dict[str, ProviderUsage] = {}
+_current_phase: ContextVar[str] = ContextVar("ai_usage_phase", default="unattributed")
+
+
+@contextmanager
+def usage_phase(name: str) -> Iterator[None]:
+    """Attribute provider-reported usage inside this context to one pipeline phase."""
+    token = _current_phase.set(name)
+    try:
+        yield
+    finally:
+        _current_phase.reset(token)
 
 
 def record_usage(provider: str, input_tokens: int = 0, output_tokens: int = 0) -> None:
@@ -48,6 +64,9 @@ def record_usage(provider: str, input_tokens: int = 0, output_tokens: int = 0) -
     usage = _provider_usage.setdefault(provider, ProviderUsage())
     usage.input_tokens += max(0, input_tokens)
     usage.output_tokens += max(0, output_tokens)
+    phase = _phase_usage.setdefault(_current_phase.get(), ProviderUsage())
+    phase.input_tokens += max(0, input_tokens)
+    phase.output_tokens += max(0, output_tokens)
 
 
 def get_usage_snapshot() -> TokenUsageSnapshot:
@@ -58,9 +77,11 @@ def get_usage_snapshot() -> TokenUsageSnapshot:
         total_input_tokens=total_in,
         total_output_tokens=total_out,
         per_provider=dict(_provider_usage),
+        per_phase=dict(_phase_usage),
     )
 
 
 def reset_usage() -> None:
     """Reset all accumulated usage (useful for tests)."""
     _provider_usage.clear()
+    _phase_usage.clear()

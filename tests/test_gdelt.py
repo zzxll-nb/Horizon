@@ -178,3 +178,21 @@ def test_non_json_body_returns_empty() -> None:
     scraper = GDELTScraper(config, client)
 
     assert asyncio.run(scraper.fetch(SINCE)) == []
+
+
+def test_rate_limit_retries_only_configured_attempts(monkeypatch) -> None:
+    rate_limited = MagicMock()
+    rate_limited.status_code = 429
+    rate_limited.headers = {}
+    request = httpx.Request("GET", GDELTScraper.BASE_URL)
+    rate_limited.raise_for_status.side_effect = httpx.HTTPStatusError(
+        "rate limited", request=request, response=httpx.Response(429, request=request)
+    )
+    client = AsyncMock()
+    client.get.return_value = rate_limited
+    monkeypatch.setattr("src.scrapers.gdelt.asyncio.sleep", AsyncMock())
+    scraper = GDELTScraper(GDELTConfig(enabled=True, query="markets", max_attempts=2), client)
+
+    assert asyncio.run(scraper.fetch(SINCE)) == []
+    assert client.get.await_count == 2
+    assert scraper.source_health["GDELT"]["status"] == "failed"

@@ -22,6 +22,7 @@ Design notes:
 from __future__ import annotations
 
 import logging
+import asyncio
 from datetime import datetime, timezone
 from typing import Any, List, Optional
 
@@ -48,6 +49,7 @@ class GDELTScraper(BaseScraper):
         """
         super().__init__({"gdelt": config}, http_client)
         self.gdelt_config = config
+        self.source_health: dict[str, dict[str, object]] = {}
 
     async def fetch(self, since: datetime) -> List[ContentItem]:
         """Fetch articles from the GDELT DOC API.
@@ -90,22 +92,37 @@ class GDELTScraper(BaseScraper):
             params["enddatetime"] = now_utc.strftime("%Y%m%d%H%M%S")
 
         try:
-            response = await self.client.get(
-                self.BASE_URL, params=params, follow_redirects=True
-            )
-            response.raise_for_status()
+            response = None
+            for attempt in range(self.gdelt_config.max_attempts):
+                response = await self.client.get(
+                    self.BASE_URL, params=params, follow_redirects=True
+                )
+                if response.status_code != 429 or attempt + 1 >= self.gdelt_config.max_attempts:
+                    response.raise_for_status()
+                    break
+                retry_after = response.headers.get("Retry-After")
+                try:
+                    delay = min(float(retry_after), 4.0) if retry_after else 2**attempt
+                except ValueError:
+                    delay = 2**attempt
+                logger.warning("GDELT rate limited; retrying in %.1fs", delay)
+                await asyncio.sleep(delay)
+            assert response is not None
 
             try:
                 payload = response.json()
             except Exception as exc:
                 logger.warning("GDELT returned a non-JSON body: %s", exc)
+                self._set_health("degraded", 0, response.status_code, str(exc))
                 return []
 
             if not isinstance(payload, dict):
+                self._set_health("empty", 0, response.status_code)
                 return []
 
             articles = payload.get("articles")
             if not articles:
+                self._set_health("empty", 0, response.status_code)
                 return []
 
             items: List[ContentItem] = []
@@ -113,14 +130,35 @@ class GDELTScraper(BaseScraper):
                 item = self._raw_to_item(raw)
                 if item is not None:
                     items.append(item)
+            self._set_health("healthy" if items else "empty", len(items), response.status_code)
             return items
 
         except httpx.HTTPError as exc:
             logger.warning("Error fetching GDELT articles: %s", exc)
+            self._set_health(
+                "failed",
+                0,
+                getattr(getattr(exc, "response", None), "status_code", None),
+                str(exc),
+            )
             return []
         except Exception as exc:
             logger.warning("Error parsing GDELT response: %s", exc)
+            self._set_health("failed", 0, None, str(exc))
             return []
+
+    def _set_health(
+        self, status: str, count: int, http_status: int | None, error: str | None = None
+    ) -> None:
+        self.source_health["GDELT"] = {
+            "status": status,
+            "source_tier": self.gdelt_config.tier,
+            "fetched_count": count,
+            "duplicate_count": 0,
+            "http_status": http_status,
+            "parser_error": error,
+            "error": error,
+        }
 
     def _raw_to_item(self, raw: Any) -> Optional[ContentItem]:
         """Map one GDELT article record into a ContentItem.
@@ -149,6 +187,7 @@ class GDELTScraper(BaseScraper):
             "language": raw.get("language"),
             "query": self.gdelt_config.query,
             "category": self.gdelt_config.category,
+            "source_tier": self.gdelt_config.tier,
         }
 
         try:

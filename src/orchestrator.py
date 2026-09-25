@@ -27,6 +27,7 @@ from .scrapers.openbb import OpenBBScraper
 from .scrapers.ossinsight import OSSInsightScraper
 from .scrapers.gdelt import GDELTScraper
 from .scrapers.google_news import GoogleNewsScraper
+from .scrapers.official_markets import BLSDataScraper, TreasuryReleaseScraper, SECFilingsScraper
 from .ai.client import create_ai_client
 from .ai.analyzer import ContentAnalyzer
 from .ai.summarizer import DailySummarizer
@@ -34,8 +35,9 @@ from .ai.enricher import ContentEnricher, EnrichmentBatchResult
 from .ai.router import route_deep_analysis
 from .ai.reviewer import ContentReviewer, ReviewBatchResult
 from .ai.analysis_cache import apply_cached_analysis, update_analysis_cache
-from .ai.tokens import get_usage_snapshot
+from .ai.tokens import get_usage_snapshot, usage_phase
 from .processing import ProfileRegistry
+from .processing.event_clusters import cap_ai_candidates, cluster_events, source_tier
 from .processing.tools import ToolRegistry
 from .dashboard_export import build_dashboard_snapshot, dashboard_skip_reason
 
@@ -115,6 +117,7 @@ class SourceFetchOutcome:
     status: Literal["success", "empty", "failure"]
     items: List[ContentItem] = field(default_factory=list)
     error: Optional[str] = None
+    source_health: Dict[str, Dict[str, object]] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, object]:
         result: Dict[str, object] = {
@@ -228,6 +231,8 @@ class HorizonOrchestrator:
         )
         self.last_fetch_report: Optional[FetchReport] = None
         self.last_deep_routing_counts = {"terra": 0, "sol": 0}
+        self.last_pipeline_counts: Dict[str, int] = {}
+        self.last_selection_counts = {"freshness_rejected": 0, "background_selected": 0}
 
     async def run(
         self,
@@ -265,6 +270,7 @@ class HorizonOrchestrator:
 
             # 2. Fetch content from all sources
             all_items = await self.fetch_all_sources(since)
+            self.last_pipeline_counts = {"raw": len(all_items)}
             self.console.print(
                 f"{self.icons['fetched']} Fetched {len(all_items)} items from all sources\n"
             )
@@ -278,6 +284,7 @@ class HorizonOrchestrator:
 
             # 3. Merge cross-source duplicates (same URL from different sources)
             merged_items = self.merge_cross_source_duplicates(all_items)
+            self.last_pipeline_counts["deduped"] = len(merged_items)
             if len(merged_items) < len(all_items):
                 self.console.print(
                     f"{self.icons['merge']} Merged "
@@ -291,8 +298,21 @@ class HorizonOrchestrator:
                     "(cross-source)[/dim]"
                 )
 
+            clustered = cluster_events(merged_items)
+            candidate_items = cap_ai_candidates(
+                clustered.items, self.config.collection.max_ai_candidates
+            )
+            self.last_pipeline_counts["clusters"] = len(clustered.items)
+            self.last_pipeline_counts["mini_input"] = len(candidate_items)
+            self._update_source_health_after_preprocessing(all_items, candidate_items)
+            self.console.print(
+                f"{self.icons['merge']} Event clustering: input={len(merged_items)}, "
+                f"clusters={len(clustered.items)}, merged={clustered.clustered_count}, "
+                f"mini_candidates={len(candidate_items)}\n"
+            )
+
             # 4. Analyze with AI
-            analyzed_items = await self.analyze_items(merged_items)
+            analyzed_items = await self.analyze_items(candidate_items)
             classified_count = sum(item.processing is not None for item in analyzed_items)
             analyzed_count = sum(
                 item.processing is not None
@@ -301,7 +321,7 @@ class HorizonOrchestrator:
                 for item in analyzed_items
             )
             self.console.print(
-                f"{self.icons['ai']} AI processing: input={len(merged_items)}, "
+                f"{self.icons['ai']} AI processing: input={len(candidate_items)}, "
                 f"classified={classified_count}, scored={analyzed_count}\n"
             )
             if analyzed_items and analyzed_count == 0:
@@ -322,6 +342,7 @@ class HorizonOrchestrator:
                     analyzed_items
                 )
                 mini_rejected_count = len(mini_rejected)
+                self.last_pipeline_counts["terra_candidates"] = len(review_candidates)
                 review_result = await self.review_items(review_candidates)
                 terra_reviewed_count = review_result.reviewed_count
                 if review_candidates and terra_reviewed_count == 0:
@@ -350,7 +371,6 @@ class HorizonOrchestrator:
                     self.console.print(
                         f"      {self.icons['detail']} skip reason {reason}: {count}"
                     )
-
             # Show per-sub-source selection breakdown
             selected_counts: Dict[str, int] = defaultdict(int)
             for item in important_items:
@@ -418,6 +438,19 @@ class HorizonOrchestrator:
                     f"{self.icons['save']} Saved dashboard snapshot to: "
                     f"{latest_path} (archive: {archive_path}, cache: {cache_path})\n"
                 )
+                self.console.print(
+                    "Pipeline: "
+                    f"raw={self.last_pipeline_counts.get('raw', 0)}, "
+                    f"deduped={self.last_pipeline_counts.get('deduped', 0)}, "
+                    f"clusters={self.last_pipeline_counts.get('clusters', 0)}, "
+                    f"mini={analyzed_count}, terra_reviewed={terra_reviewed_count}, "
+                    f"selected={len(important_items)}, reused={reused_analysis_count}, "
+                    f"freshness_rejected={self.last_selection_counts['freshness_rejected']}, "
+                    f"background_selected={self.last_selection_counts['background_selected']}, "
+                    f"terra_deep={self.last_deep_routing_counts['terra']}, "
+                    f"sol_deep={self.last_deep_routing_counts['sol']}, "
+                    f"dashboard_exported={exported_count}"
+                )
                 if self.config.ai.review.enabled:
                     review_config = self.config.ai.review
                     deep_config = self.config.ai.deep_analysis
@@ -450,6 +483,7 @@ class HorizonOrchestrator:
             # generating a full Daily Briefing every half hour.
             if not generate_daily_summary:
                 self.console.print("[dim]Skipping Daily Briefing for incremental refresh.[/dim]\n")
+                self._print_token_usage()
                 return
 
             for lang in self.config.ai.languages:
@@ -532,20 +566,7 @@ class HorizonOrchestrator:
                 f"[bold green]{self.icons['success']} "
                 "Horizon completed successfully![/bold green]"
             )
-            usage = get_usage_snapshot()
-            if usage.total_tokens > 0:
-                self.console.print(
-                    f"\n{self.icons['tokens']} Token usage this run: "
-                    f"{usage.total_tokens} tokens "
-                    f"(input: {usage.total_input_tokens}, output: {usage.total_output_tokens})"
-                )
-                for provider, u in sorted(usage.per_provider.items()):
-                    if u.total <= 0:
-                        continue
-                    self.console.print(
-                        f"   {self.icons['detail']} {provider}: {u.total} tokens "
-                        f"(in: {u.input_tokens}, out: {u.output_tokens})"
-                    )
+            self._print_token_usage()
 
         except Exception as e:
             self.console.print(
@@ -566,6 +587,29 @@ class HorizonOrchestrator:
 
             raise
 
+    def _print_token_usage(self) -> None:
+        """Print provider-reported tokens, split by model pipeline phase."""
+        usage = get_usage_snapshot()
+        if usage.total_tokens <= 0:
+            return
+        self.console.print(
+            f"\n{self.icons['tokens']} Token usage this run: "
+            f"{usage.total_tokens} tokens "
+            f"(input: {usage.total_input_tokens}, output: {usage.total_output_tokens})"
+        )
+        for provider, value in sorted(usage.per_provider.items()):
+            if value.total > 0:
+                self.console.print(
+                    f"   {self.icons['detail']} {provider}: {value.total} tokens "
+                    f"(in: {value.input_tokens}, out: {value.output_tokens})"
+                )
+        for phase, value in sorted(usage.per_phase.items()):
+            if value.total > 0:
+                self.console.print(
+                    f"   {self.icons['detail']} phase/{phase}: {value.total} tokens "
+                    f"(in: {value.input_tokens}, out: {value.output_tokens})"
+                )
+
     def _determine_time_window(self, force_hours: int = None) -> datetime:
         if force_hours:
             since = datetime.now(timezone.utc) - timedelta(hours=force_hours)
@@ -573,6 +617,44 @@ class HorizonOrchestrator:
             hours = self.config.collection.time_window_hours
             since = datetime.now(timezone.utc) - timedelta(hours=hours)
         return since
+
+    def _update_source_health_after_preprocessing(
+        self, raw_items: List[ContentItem], candidates: List[ContentItem]
+    ) -> None:
+        """Attach accepted/clustered counts to persisted per-source health."""
+        load_state = getattr(self.storage, "load_source_state", None)
+        save_state = getattr(self.storage, "save_source_state", None)
+        if not load_state or not save_state:
+            return
+        state = load_state()
+        health = state.get("health", {})
+        candidate_ids = {item.id for item in candidates}
+
+        def matches(source_name: str, item: ContentItem) -> bool:
+            if source_name == "Google News":
+                return item.source_type.value == "google_news"
+            if source_name == "GDELT":
+                return item.source_type.value == "gdelt"
+            if source_name == "BLS Public Data API":
+                return item.source_type.value == "bls"
+            if source_name == "U.S. Treasury Releases":
+                return item.source_type.value == "treasury"
+            if source_name == "SEC EDGAR Watch Universe":
+                return item.source_type.value == "sec_filings"
+            if source_name.startswith("OpenBB/"):
+                return item.metadata.get("watchlist") == source_name.partition("/")[2]
+            return self._sub_source_label(item) == source_name
+
+        for source_name, record in health.items():
+            source_raw = [item for item in raw_items if matches(source_name, item)]
+            accepted = sum(
+                1 for item in candidates if matches(source_name, item) and item.id in candidate_ids
+            )
+            record["accepted_count"] = accepted
+            record["clustered_count"] = max(0, len(source_raw) - accepted)
+            record["duplicates"] = int(record.get("duplicate_count", 0))
+        state["health"] = health
+        save_state(state)
 
     async def fetch_all_sources(self, since: datetime) -> List[ContentItem]:
         """Fetch content from all configured sources.
@@ -608,6 +690,37 @@ class HorizonOrchestrator:
                     ExtractorRegistry(self.config.extractors),
                 )
                 tasks.append(self._fetch_with_progress("RSS Feeds", rss_scraper, since))
+
+            storage = getattr(self, "storage", None)
+            load_source_state = getattr(storage, "load_source_state", None)
+            source_state = load_source_state() if load_source_state else {}
+            bls_scraper = None
+            bls_config = getattr(self.config.sources, "bls", None)
+            if bls_config and bls_config.enabled:
+                bls_scraper = BLSDataScraper(
+                    bls_config,
+                    client,
+                    previous_state=source_state.get("bls_series", {}),
+                )
+                tasks.append(self._fetch_with_progress("BLS", bls_scraper, since))
+            treasury_config = getattr(self.config.sources, "treasury", None)
+            if treasury_config and treasury_config.enabled:
+                tasks.append(
+                    self._fetch_with_progress(
+                        "U.S. Treasury",
+                        TreasuryReleaseScraper(treasury_config, client),
+                        since,
+                    )
+                )
+            sec_config = getattr(self.config.sources, "sec_filings", None)
+            if sec_config and sec_config.enabled:
+                tasks.append(
+                    self._fetch_with_progress(
+                        "SEC EDGAR",
+                        SECFilingsScraper(sec_config, client),
+                        since,
+                    )
+                )
 
             # Reddit
             if self.config.sources.reddit.enabled:
@@ -652,6 +765,34 @@ class HorizonOrchestrator:
             outcomes = await asyncio.gather(*tasks)
             self.last_fetch_report = FetchReport(outcomes=list(outcomes))
 
+            health_state = source_state.get("health", {})
+            now_iso = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+            for outcome in outcomes:
+                for source_name, current in outcome.source_health.items():
+                    previous = health_state.get(source_name, {})
+                    failed = current.get("status") in {"failure", "failed"}
+                    record = dict(current)
+                    record["source_name"] = source_name
+                    record.setdefault("source_tier", 3)
+                    record.setdefault("accepted_count", record.get("fetched_count", 0))
+                    record.setdefault("duplicates", record.get("duplicate_count", 0))
+                    record.setdefault("clustered_count", 0)
+                    record.setdefault("http_status", None)
+                    record.setdefault("parser_error", record.get("error"))
+                    record["consecutive_failures"] = (
+                        int(previous.get("consecutive_failures", 0)) + 1 if failed else 0
+                    )
+                    record["last_success"] = (
+                        previous.get("last_success") if failed else now_iso
+                    )
+                    health_state[source_name] = record
+            source_state["health"] = health_state
+            if bls_scraper is not None:
+                source_state["bls_series"] = bls_scraper.updated_state
+            save_source_state = getattr(storage, "save_source_state", None)
+            if save_source_state:
+                save_source_state(source_state)
+
             # Flatten successful and empty outcomes; failures remain in the report.
             all_items: List[ContentItem] = []
             for outcome in outcomes:
@@ -682,6 +823,22 @@ class HorizonOrchestrator:
                 source_name=name,
                 status="failure",
                 error=error,
+                source_health={
+                    name: {
+                        "status": "failed",
+                        "source_tier": 3,
+                        "fetched_count": 0,
+                        "accepted_count": 0,
+                        "duplicate_count": 0,
+                        "duplicates": 0,
+                        "clustered_count": 0,
+                        "http_status": getattr(
+                            getattr(exc, "response", None), "status_code", None
+                        ),
+                        "parser_error": error,
+                        "error": error,
+                    }
+                },
             )
 
         self.console.print(f"   Found {len(items)} items from {name}")
@@ -689,7 +846,15 @@ class HorizonOrchestrator:
         source_health = getattr(scraper, "source_health", None)
         if isinstance(source_health, dict):
             for source_name, health in sorted(source_health.items()):
-                status = health.get("status", "unknown")
+                raw_status = health.get("status", "unknown")
+                status = {
+                    "success": "healthy",
+                    "failure": "failed",
+                }.get(str(raw_status), raw_status)
+                health["status"] = status
+                health.setdefault("accepted_count", health.get("fetched_count", 0))
+                health.setdefault("duplicates", health.get("duplicate_count", 0))
+                health.setdefault("clustered_count", 0)
                 fetched = health.get("fetched_count", 0)
                 duplicates = health.get("duplicate_count", 0)
                 message = (
@@ -712,6 +877,7 @@ class HorizonOrchestrator:
             source_name=name,
             status="success" if items else "empty",
             items=items,
+            source_health=source_health if isinstance(source_health, dict) else {},
         )
 
     @staticmethod
@@ -771,13 +937,17 @@ class HorizonOrchestrator:
                 merged.append(group_copies[0])
                 continue
 
-            # Pick the item with the richest content as primary
-            primary = max(group_copies, key=lambda x: len(x.content or ""))
+            # Prefer first-party sources, then richer content within the same tier.
+            primary = min(
+                group_copies,
+                key=lambda value: (source_tier(value), -len(value.content or "")),
+            )
 
             # Count every item removed by the URL merge against its configured
             # feed/source. This is diagnostic only and does not affect merging.
-            primary_index = max(
-                range(len(group)), key=lambda i: len(group[i].content or "")
+            primary_index = min(
+                range(len(group)),
+                key=lambda i: (source_tier(group[i]), -len(group[i].content or "")),
             )
             for index, item in enumerate(group):
                 if index != primary_index:
@@ -793,12 +963,32 @@ class HorizonOrchestrator:
                     if mk not in primary.metadata or not primary.metadata[mk]:
                         primary.metadata[mk] = mv
 
-                # Append content (e.g., comments from another source)
+                # Preserve the established exact-URL merge behavior. Event
+                # clustering still limits distinct alternate articles to short
+                # snippets before AI prompts.
                 if item is not primary and item.content:
                     if primary.content and item.content not in primary.content:
-                        primary.content = (primary.content or "") + f"\n\n--- From {item.source_type.value} ---\n" + item.content
+                        primary.content = (
+                            (primary.content or "")
+                            + f"\n\n--- From {item.source_type.value} ---\n"
+                            + item.content
+                        )
 
             primary.metadata["merged_sources"] = all_sources
+            primary.metadata["source_count"] = len(group_copies)
+            primary.metadata["alternate_sources"] = [
+                {
+                    "name": self._sub_source_label(item),
+                    "url": str(item.url),
+                    "published_at": item.published_at.isoformat(),
+                    "tier": source_tier(item),
+                    "title": item.title,
+                    "snippet": (item.content or "")[:500],
+                    "item_id": item.id,
+                }
+                for item in group_copies
+                if item.id != primary.id
+            ]
             merged.append(primary)
 
         self.last_cross_source_duplicate_counts = dict(duplicate_counts)
@@ -1094,6 +1284,22 @@ class HorizonOrchestrator:
             )
             for item in post_reanalysis
         )
+        max_candidates = self.config.ai.review.max_review_candidates
+        if len(post_reanalysis) > max_candidates:
+            post_reanalysis.sort(
+                key=lambda item: (
+                    -(
+                        item.processing.analysis.score
+                        if item.processing and item.processing.analysis
+                        and item.processing.analysis.score is not None
+                        else -1
+                    ),
+                    source_tier(item),
+                    -int(item.metadata.get("source_count", 1)),
+                    -item.published_at.timestamp(),
+                )
+            )
+            post_reanalysis = post_reanalysis[:max_candidates]
         self.console.print(
             f"{self.icons['filter']} Mini screening: candidates="
             f"{len(post_reanalysis)}, high_priority={high_priority}, "
@@ -1116,7 +1322,8 @@ class HorizonOrchestrator:
         reviewer = ContentReviewer(
             create_ai_client(runtime_config), batch_size=review_config.batch_size
         )
-        result = await reviewer.review_batch(items)
+        with usage_phase("terra_review"):
+            result = await reviewer.review_batch(items)
         self.console.print(
             f"{self.icons['ai']} Terra review: reviewed={result.reviewed_count}, "
             f"failed={result.final_review_failure_count}, "
@@ -1163,6 +1370,10 @@ class HorizonOrchestrator:
         ):
             balanced = self.apply_balanced_digest(approved)
             selected = balanced.items[: self.config.ai.review.max_items]
+            self.last_selection_counts = {
+                "freshness_rejected": 0,
+                "background_selected": 0,
+            }
             self.console.print(
                 f"{self.icons['filter']} Terra selection: approved={len(approved)}, "
                 f"selected={len(selected)}, rejected={len(items) - len(approved)}"
@@ -1203,6 +1414,10 @@ class HorizonOrchestrator:
         remaining = selection_limit - len(selected)
         background_limit = min(collection.max_background_items, remaining)
         selected.extend(background[:background_limit])
+        self.last_selection_counts = {
+            "freshness_rejected": stale_rejected,
+            "background_selected": min(len(background), background_limit),
+        }
         self.console.print(
             f"{self.icons['filter']} Freshness selection: fresh_approved={len(fresh)}, "
             f"background_candidates={len(background)}, stale_rejected={stale_rejected}, "
@@ -1481,7 +1696,9 @@ class HorizonOrchestrator:
                     "provider_chain": None,
                 }
             )
-            batch = await self._enrich_with_config(group_items, runtime_config)
+            phase = "sol_deep" if model == deep_config.sol_model else "terra_deep"
+            with usage_phase(phase):
+                batch = await self._enrich_with_config(group_items, runtime_config)
             result.succeeded_ids.extend(batch.succeeded_ids)
             result.failures.update(batch.failures)
         return result
@@ -1527,7 +1744,8 @@ class HorizonOrchestrator:
         ai_client = create_ai_client(self._scoring_ai_config())
         analyzer = ContentAnalyzer(ai_client, self.profiles, console=self.console)
 
-        return await analyzer.analyze_batch(items)
+        with usage_phase("mini"):
+            return await analyzer.analyze_batch(items)
 
     def _scoring_ai_config(self) -> AIConfig:
         """Return the inexpensive first-pass model configuration."""

@@ -5,10 +5,10 @@ them into ContentItem instances so the rest of the Horizon pipeline
 (deduplication, AI scoring, enrichment, summarization) treats them the
 same way as RSS or Hacker News items.
 
-The `openbb` package is declared as an optional dependency in
-pyproject.toml. If it is not installed the scraper logs a warning and
-returns an empty list rather than crashing, so a user can enable the
-OpenBB source without blocking the core pipeline.
+The `openbb` package is optional. For the configured free ``yfinance``
+provider, a lightweight Yahoo Finance public-news adapter keeps the same
+source interface productive in CI without installing OpenBB's full plugin
+tree. Other providers still use the SDK when installed.
 
 Design notes:
 
@@ -55,6 +55,7 @@ class OpenBBScraper(BaseScraper):
         super().__init__({"openbb": config}, http_client)
         self.openbb_config = config
         self._obb = self._try_import_obb()
+        self.source_health: dict[str, dict[str, object]] = {}
 
     @staticmethod
     def _try_import_obb() -> Optional[Any]:
@@ -69,11 +70,7 @@ class OpenBBScraper(BaseScraper):
             from openbb import obb
             return obb
         except ImportError:
-            logger.warning(
-                "OpenBB source is enabled but the 'openbb' package is not "
-                "installed. Install it with: "
-                "uv pip install --only-binary=:all: openbb"
-            )
+            logger.info("OpenBB SDK unavailable; using lightweight Yahoo adapter")
             return None
 
     async def fetch(self, since: datetime) -> List[ContentItem]:
@@ -85,7 +82,7 @@ class OpenBBScraper(BaseScraper):
         Returns:
             Deduplicated list of content items across all watchlists.
         """
-        if not self._obb or not self.openbb_config.enabled:
+        if not self.openbb_config.enabled:
             return []
 
         since_utc = self._ensure_utc(since)
@@ -96,14 +93,37 @@ class OpenBBScraper(BaseScraper):
             if not watchlist.enabled or not watchlist.symbols:
                 continue
             try:
-                fetched = await self._fetch_watchlist(watchlist, since_utc)
+                if self._obb is not None:
+                    fetched = await self._fetch_watchlist(watchlist, since_utc)
+                elif watchlist.provider == "yfinance":
+                    fetched = await self._fetch_yahoo_watchlist(watchlist, since_utc)
+                else:
+                    raise RuntimeError("provider requires the optional OpenBB SDK")
             except Exception as exc:
                 logger.warning(
                     "OpenBB watchlist '%s' failed: %s",
                     watchlist.name,
                     exc,
                 )
+                self.source_health[f"OpenBB/{watchlist.name}"] = {
+                    "status": "failed",
+                    "source_tier": watchlist.tier,
+                    "fetched_count": 0,
+                    "duplicate_count": 0,
+                    "http_status": getattr(getattr(exc, "response", None), "status_code", None),
+                    "parser_error": str(exc),
+                    "error": str(exc),
+                }
                 continue
+            self.source_health[f"OpenBB/{watchlist.name}"] = {
+                "status": "healthy" if fetched else "empty",
+                "source_tier": watchlist.tier,
+                "fetched_count": len(fetched),
+                "duplicate_count": 0,
+                "http_status": 200,
+                "parser_error": None,
+                "error": None,
+            }
             for item in fetched:
                 url_key = str(item.url)
                 if url_key in seen_urls:
@@ -112,6 +132,56 @@ class OpenBBScraper(BaseScraper):
                 items.append(item)
 
         return items
+
+    async def _fetch_yahoo_watchlist(
+        self, watchlist: OpenBBWatchlist, since_utc: datetime
+    ) -> List[ContentItem]:
+        """Use Yahoo's public search endpoint as a small CI-safe provider adapter."""
+        results: List[ContentItem] = []
+        per_symbol = max(1, min(8, watchlist.fetch_limit // max(1, len(watchlist.symbols))))
+        for symbol in watchlist.symbols:
+            response = await self.client.get(
+                "https://query1.finance.yahoo.com/v1/finance/search",
+                params={"q": symbol, "quotesCount": 0, "newsCount": per_symbol},
+                headers={"User-Agent": "Mozilla/5.0 Horizon Market Intelligence"},
+                follow_redirects=True,
+            )
+            response.raise_for_status()
+            for raw in response.json().get("news") or []:
+                published_value = raw.get("providerPublishTime")
+                try:
+                    published = datetime.fromtimestamp(float(published_value), tz=timezone.utc)
+                except (TypeError, ValueError, OSError):
+                    continue
+                if published <= since_utc:
+                    continue
+                url = str(raw.get("link") or "").strip()
+                title = str(raw.get("title") or "").strip()
+                if not url or not title:
+                    continue
+                results.append(
+                    ContentItem(
+                        id=self._generate_id(
+                            "openbb", "yfinance", self._derive_native_id(url, published)
+                        ),
+                        source_type=self.SOURCE_TYPE,
+                        title=title,
+                        url=url,
+                        content=str(raw.get("summary") or "") or None,
+                        author=str(raw.get("publisher") or symbol),
+                        published_at=published,
+                        profile=watchlist.profile,
+                        metadata={
+                            "watchlist": watchlist.name,
+                            "provider": "yfinance-direct",
+                            "source_name": str(raw.get("publisher") or "Yahoo Finance"),
+                            "source_tier": watchlist.tier,
+                            "symbols": [symbol],
+                            "category": watchlist.category,
+                        },
+                    )
+                )
+        return results
 
     async def _fetch_watchlist(
         self,
@@ -169,6 +239,7 @@ class OpenBBScraper(BaseScraper):
             "provider": watchlist.provider,
             "symbols": symbols,
             "category": watchlist.category,
+            "source_tier": watchlist.tier,
         }
 
         return ContentItem(

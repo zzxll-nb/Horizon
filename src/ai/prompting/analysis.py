@@ -44,11 +44,21 @@ def analysis_user_prompt(
     content_section: str,
     discussion_section: str,
 ) -> str:
+    alternates = item.metadata.get("alternate_sources", [])[:3]
+    corroboration = "\n".join(
+        f"- {entry.get('name', 'Unknown')} (Tier {entry.get('tier', 3)}): "
+        f"{entry.get('title', '')} — {entry.get('snippet', '')[:280]}"
+        for entry in alternates
+    )
     return f"""Analyze the following content.
 
 Title: {item.title}
 Source: {item.source_type.value}
 Author: {item.author or "Unknown"}
 URL: {item.url}
+Source tier: {item.metadata.get('source_tier', 3)}
+Independent source count: {item.metadata.get('source_count', 1)}
+Corroborating coverage:
+{corroboration or 'None'}
 {content_section}
 {discussion_section}"""

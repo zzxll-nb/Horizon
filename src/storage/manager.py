@@ -73,6 +73,7 @@ class StorageManager:
         self.summaries_dir = self.data_dir / "summaries"
         self.dashboard_dir = self.data_dir / "dashboard"
         self.analysis_cache_path = self.dashboard_dir / "analysis-cache.json"
+        self.source_state_path = self.dashboard_dir / "source-state.json"
         self.market_dir = self.data_dir / "market"
 
         self.data_dir.mkdir(parents=True, exist_ok=True)
@@ -165,6 +166,25 @@ class StorageManager:
         content = json.dumps(cache, indent=2, ensure_ascii=False) + "\n"
         _atomic_write_text(self.analysis_cache_path, content)
         return self.analysis_cache_path
+
+    def load_source_state(self) -> dict[str, Any]:
+        """Load persistent release cursors and source-health history."""
+        if not self.source_state_path.exists():
+            return {}
+        try:
+            value = json.loads(self.source_state_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            logger.warning("Unable to load source state: %s", error)
+            return {}
+        return value if isinstance(value, dict) else {}
+
+    def save_source_state(self, state: dict[str, Any]) -> Path:
+        """Atomically persist release cursors and source-health history."""
+        _atomic_write_text(
+            self.source_state_path,
+            json.dumps(state, indent=2, ensure_ascii=False) + "\n",
+        )
+        return self.source_state_path
 
     def save_market_snapshot(self, snapshot: dict[str, Any]) -> Path:
         """Atomically save the latest market snapshot used by Dashboard."""

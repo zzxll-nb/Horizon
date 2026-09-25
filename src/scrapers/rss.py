@@ -136,6 +136,8 @@ class RSSScraper(BaseScraper):
                     profile=source.profile,
                     metadata={
                         "feed_name": source.name,
+                        "source_name": source.name,
+                        "source_tier": source.tier,
                         "category": source.category,
                         "tags": [tag.term for tag in entry.get("tags", [])],
                     },
@@ -148,6 +150,9 @@ class RSSScraper(BaseScraper):
                 "status": "failure",
                 "fetched_count": 0,
                 "duplicate_count": 0,
+                "source_tier": source.tier,
+                "http_status": getattr(getattr(e, "response", None), "status_code", None),
+                "parser_error": None,
                 "error": error,
             }
             logger.warning("Error fetching RSS feed %s: %s", source.name, error)
@@ -157,6 +162,9 @@ class RSSScraper(BaseScraper):
                 "status": "failure",
                 "fetched_count": 0,
                 "duplicate_count": 0,
+                "source_tier": source.tier,
+                "http_status": None,
+                "parser_error": error,
                 "error": error,
             }
             logger.warning("Error parsing RSS feed %s: %s", source.name, error)
@@ -167,6 +175,9 @@ class RSSScraper(BaseScraper):
                 # Cross-source duplicates are calculated after every scraper
                 # has completed; this is the pre-merge count.
                 "duplicate_count": 0,
+                "source_tier": source.tier,
+                "http_status": response.status_code,
+                "parser_error": None,
                 "error": None,
             }
 

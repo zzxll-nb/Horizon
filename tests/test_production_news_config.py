@@ -6,7 +6,7 @@ from src.storage.manager import StorageManager
 
 
 ROOT = Path(__file__).parents[1]
-CONFIG_PATH = ROOT / "data" / "config.china-example.json"
+CONFIG_PATH = ROOT / "data" / "config.market-intelligence.json"
 EXPECTED_PROFILES = {
     "markets-news",
     "finance-news",
@@ -18,17 +18,21 @@ EXPECTED_PROFILES = {
 EXPECTED_RSS_SOURCES = {
     "Federal Reserve Press Releases",
     "Federal Reserve Monetary Policy",
-    "BLS Latest Numbers",
+    "BEA News Releases",
     "SEC Press Releases",
     "EIA Today in Energy",
     "EIA Press Releases",
     "CNBC Finance",
+    "CNBC Investing",
+    "CNBC Technology",
     "New York Times Business",
     "MarketWatch MarketPulse",
     "NVIDIA Press Releases",
     "AMD Press Releases",
     "OpenAI Blog",
     "AWS What's New",
+    "Microsoft Source",
+    "Google DeepMind",
 }
 
 
@@ -46,6 +50,15 @@ def test_production_config_uses_market_focused_profiles_and_sources() -> None:
     assert config.collection.freshness_gate_enabled is True
     assert config.collection.max_background_items == 1
     assert config.sources.gdelt.timespan is None
+    assert config.sources.gdelt.tier == 3
+    assert config.sources.gdelt.max_attempts == 2
+    assert config.sources.bls.enabled is True
+    assert len(config.sources.bls.series) >= 5
+    assert config.sources.treasury.enabled is True
+    assert config.sources.sec_filings.enabled is True
+    assert len(config.sources.sec_filings.companies) <= 20
+    assert config.sources.sec_filings.max_per_company == 2
+    assert config.collection.max_ai_candidates == 90
     assert set(config.sources.gdelt.profile or []) == EXPECTED_PROFILES
     assert set(config.sources.google_news.profile or []) == EXPECTED_PROFILES
     assert {source.name for source in config.sources.rss} == EXPECTED_RSS_SOURCES

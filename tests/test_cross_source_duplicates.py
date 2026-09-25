@@ -126,11 +126,11 @@ def test_merge_preserves_richest_content_and_combines_metadata() -> None:
     assert len(result) == 1
     assert result[0].id == "rich"
     assert result[0].content == "the richer primary content\n\n--- From rss ---\nshort"
-    assert result[0].metadata == {
-        "comments": 4,
-        "score": 12,
-        "merged_sources": ["rss", "reddit"],
-    }
+    assert result[0].metadata["comments"] == 4
+    assert result[0].metadata["score"] == 12
+    assert result[0].metadata["merged_sources"] == ["rss", "reddit"]
+    assert result[0].metadata["source_count"] == 2
+    assert result[0].metadata["alternate_sources"][0]["item_id"] == "short"
 
 
 def test_returns_deep_copies_without_mutation_and_is_idempotent() -> None:

@@ -163,6 +163,14 @@ def item_context(
         else ""
     )
     comments = parts.comments[:2000] if include_content else ""
+    corroboration = "\n".join(
+        f"- {entry.get('name', 'Unknown')} (Tier {entry.get('tier', 3)}), "
+        f"{entry.get('published_at', '')}: {entry.get('title', '')}; "
+        f"{str(entry.get('snippet') or '')[:500]}"
+        for entry in item.metadata.get("alternate_sources", [])
+        if entry.get("tier", 3) <= 2
+    )
+    corroboration = "\n".join(corroboration.splitlines()[:3])
     return f"""# Item
 
 Title: {item.title}
@@ -170,6 +178,8 @@ URL: {item.url}
 Source: {item.source_type.value}
 Published: {item.published_at.isoformat()}
 Author: {item.author or "Unknown"}
+Primary source tier: {item.metadata.get('source_tier', 3)}
+Independent source count: {item.metadata.get('source_count', 1)}
 Analysis summary: {analysis.summary if analysis else ""}
 Analysis reason: {analysis.reason if analysis else ""}
 Tags: {', '.join(analysis.tags) if analysis else ""}
@@ -177,6 +187,10 @@ Tags: {', '.join(analysis.tags) if analysis else ""}
 # Source content
 
 {content or "No source content available."}
+
+# Corroborating source excerpts
+
+{corroboration or "No additional Tier 1/2 corroboration available."}
 
 # Community comments
 

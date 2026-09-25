@@ -81,3 +81,21 @@ def test_incompatible_cache_schema_is_not_reused() -> None:
     cache["schema_version"] = "0.9"
 
     assert apply_cached_analysis(make_item(), cache) is False
+
+
+def test_alternate_source_order_does_not_invalidate_cache() -> None:
+    original = make_item()
+    original.metadata["alternate_sources"] = [
+        {"name": "Reuters", "url": "https://r.example/item"},
+        {"name": "CNBC", "url": "https://c.example/item"},
+    ]
+    original.metadata["source_count"] = 3
+    attach_artifact(original)
+    cache = update_analysis_cache({}, [original])
+    next_run = make_item()
+    next_run.metadata["alternate_sources"] = list(
+        reversed(original.metadata["alternate_sources"])
+    )
+    next_run.metadata["source_count"] = 3
+
+    assert apply_cached_analysis(next_run, cache) is True

@@ -20,6 +20,9 @@ class SourceType(str, Enum):
     OSSINSIGHT = "ossinsight"
     GDELT = "gdelt"
     GOOGLE_NEWS = "google_news"
+    BLS = "bls"
+    TREASURY = "treasury"
+    SEC_FILINGS = "sec_filings"
 
 
 class SourceDefinition(NamedTuple):
@@ -41,6 +44,9 @@ SOURCE_REGISTRY = {
     SourceType.OSSINSIGHT.value: SourceDefinition("ossinsight"),
     SourceType.GDELT.value: SourceDefinition("gdelt"),
     SourceType.GOOGLE_NEWS.value: SourceDefinition("google_news"),
+    SourceType.BLS.value: SourceDefinition("bls"),
+    SourceType.TREASURY.value: SourceDefinition("treasury"),
+    SourceType.SEC_FILINGS.value: SourceDefinition("sec_filings"),
 }
 
 ProfileRoute = Optional[Union[str, List[str]]]
@@ -216,6 +222,7 @@ class ReviewConfig(BaseModel):
     selection_threshold: float = Field(default=7.0, ge=0, le=10)
     max_items: int = Field(default=6, ge=1, le=6)
     batch_size: int = Field(default=8, ge=1, le=20)
+    max_review_candidates: int = Field(default=60, ge=6, le=100)
     protected_keywords: List[str] = Field(
         default_factory=lambda: [
             "federal reserve", "fomc", "美联储", "interest rate", "利率",
@@ -380,6 +387,7 @@ class RSSSourceConfig(BaseModel):
     category: Optional[str] = None
     content_extractor: Optional[str] = None
     profile: ProfileRoute = None
+    tier: int = Field(default=2, ge=1, le=3)
 
 
 class RedditSubredditConfig(BaseModel):
@@ -477,6 +485,7 @@ class OpenBBWatchlist(BaseModel):
     fetch_limit: int = 20
     category: Optional[str] = None
     profile: ProfileRoute = None
+    tier: int = Field(default=3, ge=1, le=3)
 
 
 class OpenBBConfig(BaseModel):
@@ -539,6 +548,8 @@ class GDELTConfig(BaseModel):
     country: Optional[str] = None  # sourcecountry filter; None = no filter
     category: Optional[str] = None  # Horizon category label for downstream grouping
     profile: ProfileRoute = None
+    tier: int = Field(default=3, ge=1, le=3)
+    max_attempts: int = Field(default=2, ge=1, le=3)
 
 
 class GoogleNewsConfig(BaseModel):
@@ -557,6 +568,68 @@ class GoogleNewsConfig(BaseModel):
     max_results: int = 100  # cap ~100
     category: Optional[str] = None
     profile: ProfileRoute = None
+    tier: int = Field(default=3, ge=1, le=3)
+
+
+class BLSSeriesConfig(BaseModel):
+    """One official BLS time series monitored for release-time changes."""
+
+    id: str
+    name: str
+    unit: str = ""
+
+
+class BLSConfig(BaseModel):
+    """BLS public Data API source, used when www.bls.gov RSS blocks CI."""
+
+    enabled: bool = False
+    api_url: HttpUrl = Field(
+        default="https://api.bls.gov/publicAPI/v2/timeseries/data/",
+        validate_default=True,
+    )
+    series: List[BLSSeriesConfig] = Field(default_factory=list)
+    category: str = "macro"
+    profile: ProfileRoute = "macro-news"
+    tier: int = Field(default=1, ge=1, le=3)
+
+
+class TreasuryConfig(BaseModel):
+    """Treasury public press-release manifest source."""
+
+    enabled: bool = False
+    manifest_url: HttpUrl = Field(
+        default="https://home.treasury.gov/news-data/press-releases/manifest.json",
+        validate_default=True,
+    )
+    index_url: HttpUrl = Field(
+        default="https://home.treasury.gov/news/press-releases",
+        validate_default=True,
+    )
+    keywords: List[str] = Field(default_factory=list)
+    category: str = "macro"
+    profile: ProfileRoute = "macro-news"
+    tier: int = Field(default=1, ge=1, le=3)
+
+
+class SECCompanyConfig(BaseModel):
+    """A bounded high-impact company in the EDGAR watch universe."""
+
+    ticker: str
+    cik: str
+
+
+class SECFilingsConfig(BaseModel):
+    """Official SEC submissions API source for a bounded company universe."""
+
+    enabled: bool = False
+    companies: List[SECCompanyConfig] = Field(default_factory=list)
+    forms: List[str] = Field(
+        default_factory=lambda: ["8-K", "10-Q", "10-K", "6-K", "S-1", "S-1/A"]
+    )
+    max_per_company: int = Field(default=2, ge=1, le=5)
+    category: str = "finance"
+    profile: ProfileRoute = "finance-news"
+    tier: int = Field(default=1, ge=1, le=3)
 
 
 class SourcesConfig(BaseModel):
@@ -572,6 +645,9 @@ class SourcesConfig(BaseModel):
     ossinsight: OSSInsightConfig = Field(default_factory=OSSInsightConfig)
     gdelt: Optional[GDELTConfig] = None
     google_news: Optional[GoogleNewsConfig] = None
+    bls: Optional[BLSConfig] = None
+    treasury: Optional[TreasuryConfig] = None
+    sec_filings: Optional[SECFilingsConfig] = None
 
 
 class WebhookConfig(BaseModel):
@@ -710,6 +786,7 @@ class CollectionConfig(BaseModel):
     freshness_gate_enabled: bool = False
     max_background_items: int = Field(default=0, ge=0, le=2)
     background_min_score: float = Field(default=8.0, ge=0, le=10)
+    max_ai_candidates: int = Field(default=90, ge=20, le=150)
     background_keywords: List[str] = Field(
         default_factory=lambda: [
             "research report",

@@ -205,6 +205,17 @@ class ContentReviewer:
                     "id": item.id,
                     "title": item.title,
                     "source": item.source_type.value,
+                    "source_tier": item.metadata.get("source_tier", 3),
+                    "source_count": item.metadata.get("source_count", 1),
+                    "alternate_sources": [
+                        {
+                            "name": entry.get("name"),
+                            "tier": entry.get("tier"),
+                            "title": entry.get("title"),
+                            "snippet": str(entry.get("snippet") or "")[:280],
+                        }
+                        for entry in item.metadata.get("alternate_sources", [])[:3]
+                    ],
                     "profile": (
                         item.processing.classification.profile
                         if item.processing

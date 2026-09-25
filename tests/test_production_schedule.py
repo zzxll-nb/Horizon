@@ -28,3 +28,4 @@ def test_analysis_cache_is_persisted_on_data_branch() -> None:
     workflow = (ROOT / ".github/workflows/refresh-dashboard.yml").read_text()
 
     assert workflow.count("data/dashboard/analysis-cache.json") >= 3
+    assert workflow.count("data/dashboard/source-state.json") >= 3

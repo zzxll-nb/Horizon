@@ -58,6 +58,7 @@ class GoogleNewsScraper(BaseScraper):
         """
         super().__init__({"google_news": config}, http_client)
         self.gn_config = config
+        self.source_health: dict[str, dict[str, object]] = {}
 
     async def fetch(self, since: datetime) -> List[ContentItem]:
         """Fetch articles from the Google News RSS search endpoint.
@@ -101,14 +102,35 @@ class GoogleNewsScraper(BaseScraper):
                 item = self._entry_to_item(entry)
                 if item is not None:
                     items.append(item)
+            self._set_health("healthy" if items else "empty", len(items), response.status_code)
             return items
 
         except httpx.HTTPError as exc:
             logger.warning("Error fetching Google News feed: %s", exc)
+            self._set_health(
+                "failed",
+                0,
+                getattr(getattr(exc, "response", None), "status_code", None),
+                str(exc),
+            )
             return []
         except Exception as exc:
             logger.warning("Error parsing Google News feed: %s", exc)
+            self._set_health("failed", 0, None, str(exc))
             return []
+
+    def _set_health(
+        self, status: str, count: int, http_status: int | None, error: str | None = None
+    ) -> None:
+        self.source_health["Google News"] = {
+            "status": status,
+            "source_tier": self.gn_config.tier,
+            "fetched_count": count,
+            "duplicate_count": 0,
+            "http_status": http_status,
+            "parser_error": error,
+            "error": error,
+        }
 
     def _time_operator(self, since: datetime) -> str:
         """Build the Google News time operator from ``since``.
@@ -155,6 +177,7 @@ class GoogleNewsScraper(BaseScraper):
                 "gn_query": self.gn_config.query,
                 "source_name": source_name,
                 "category": self.gn_config.category,
+                "source_tier": self.gn_config.tier,
             }
 
             return ContentItem(
